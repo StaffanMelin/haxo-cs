@@ -12,6 +12,8 @@
                 "-lstd++",
                 "-lgpiod",
                 "-li2c",
+                "-lasound",
+                "-lpthread",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],
             "options": {
