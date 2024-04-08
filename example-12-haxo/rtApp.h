@@ -21,4 +21,5 @@ public:
     void Setup();
 
     void Process(float *, float *);
+    void ProcessControl();
 };

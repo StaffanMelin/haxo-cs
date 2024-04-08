@@ -18,6 +18,7 @@ public:
         MIXER,
         MIXER_SUB,
         MIXER_PERCUSSION,
+        CONTROLLER,
         LAST
     };
 

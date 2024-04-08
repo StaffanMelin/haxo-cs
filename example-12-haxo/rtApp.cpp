@@ -7,6 +7,10 @@
 
 #include "../rtDStudio/src/dsettings.h"
 
+#include "../rtDStudio/src/dhaxo.h"
+
+#include <thread>
+
 void rtApp::Setup()
 {
 
@@ -61,13 +65,29 @@ void rtApp::Setup()
   dmixer.SetReverb(0.9f, 2000.0f);
 
   // TODO end dmixer obj to be able to send MIDI to mixer
-  dhaxo.Init();
+  DHaxo::Config dhaxo_config;
+  dhaxo_config.sample_rate = DSTUDIO_SAMPLE_RATE;
+  dhaxo_config.channels = 1;
+  dhaxo_config.synth = &dfxfilter;
+  dhaxo.Init(dhaxo_config);
 
   //.Start();
+//  std::thread thaxo([dhaxoptr]() { 
+    //dhaxoptr->Process();
+//  });
 }
+
+
+
+void rtApp::ProcessControl()
+{
+  dhaxo.Process();
+}
+
+
 
 void rtApp::Process(float *sigL, float *sigR)
 {
-  dhaxo.Process();
+  // dhaxo.Process();
   dmixer.Process(sigL, sigR);
 }

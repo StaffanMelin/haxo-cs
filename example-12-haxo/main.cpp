@@ -99,13 +99,15 @@ int main()
 	}
 
 	// list device information
-	/*
+
 	RtAudio::DeviceInfo rt_info;
 	std::cout << "\nAPI: " << RtAudio::getApiDisplayName(rt_dac.getCurrentApi()) << std::endl;
 	unsigned int device_count = rt_dac.getDeviceCount();
 	std::cout << "\nFound " << device_count << " device(s).\n";
 
-	for (unsigned int i = 0; i < device_count; i++)
+//	for (unsigned int i = 0; i < device_count; i++)
+//	for (unsigned int i = 0; i < 1; i++)
+	unsigned int i = 0;
 	{
 		rt_info = rt_dac.getDeviceInfo(i);
 
@@ -151,16 +153,20 @@ int main()
 		else
 			std::cout << "Preferred sample rate = " << rt_info.preferredSampleRate << std::endl;
 	}
-	*/
 
 	// select device
+	// Device Name = hw:MAX98357A,0
+	// Device ID = 1
+
 	rt_device = 0;
+
+	std::cout << "setup A" << std::endl;
 
 	// setup output
 	RtAudio::StreamParameters rt_params;
 	if (rt_device == 0)
 	{
-		rt_params.deviceId = rt_dac.getDefaultOutputDevice();
+//		rt_params.deviceId = rt_dac.getDefaultOutputDevice();
 	}
 	else
 	{
@@ -176,6 +182,8 @@ int main()
 
 	// data storage
 	double *data = (double *)calloc(rt_channels, sizeof(double));
+
+	std::cout << "setup B open" << std::endl;
 
 	// open stream
 	if (rt_dac.openStream(&rt_params, // output
@@ -195,8 +203,12 @@ int main()
 		goto cleanup;
 	}
 
+	std::cout << "setup D latency" << std::endl;
+
 	std::cout << "Stream latency = " << rt_dac.getStreamLatency() << "\n"
 			  << std::endl;
+
+	std::cout << "setup E start stream" << std::endl;
 
 	// start stream
 	if (rt_dac.startStream())
@@ -210,8 +222,11 @@ int main()
 	done = false;
 	(void)signal(SIGINT, finish);
 
+	std::cout << "setup F loop" << std::endl;
+
 	while (!done && rt_dac.isStreamRunning())
 	{
+		rt_app.ProcessControl();
 		SLEEP(100);
 	}
 
