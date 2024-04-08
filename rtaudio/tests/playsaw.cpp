@@ -63,7 +63,7 @@ void usage( void ) {
   std::cout << "\nuseage: playsaw N fs <device> <channelOffset> <time>\n";
   std::cout << "    where N = number of channels,\n";
   std::cout << "    fs = the sample rate,\n";
-  std::cout << "    device = optional device to use (default = 0),\n";
+  std::cout << "    device = optional device index to use (default = 0),\n";
   std::cout << "    channelOffset = an optional channel offset on the device (default = 0),\n";
   std::cout << "    and time = an optional time duration in seconds (default = no limit).\n\n";
   exit( 0 );
@@ -73,6 +73,21 @@ void errorCallback( RtAudioErrorType /*type*/, const std::string &errorText )
 {
   // This example error handling function simply outputs the error message to stderr.
   std::cerr << "\nerrorCallback: " << errorText << "\n\n";
+}
+
+unsigned int getDeviceIndex( std::vector<std::string> deviceNames )
+{
+  unsigned int i;
+  std::string keyHit;
+  std::cout << '\n';
+  for ( i=0; i<deviceNames.size(); i++ )
+    std::cout << "  Device #" << i << ": " << deviceNames[i] << '\n';
+  do {
+    std::cout << "\nChoose a device #: ";
+    std::cin >> i;
+  } while ( i >= deviceNames.size() );
+  std::getline( std::cin, keyHit );  // used to clear out stdin
+  return i;
 }
 
 unsigned int channels;
@@ -160,8 +175,9 @@ int main( int argc, char *argv[] )
 
   // Specify our own error callback function.
   RtAudio dac( RtAudio::UNSPECIFIED, &errorCallback );
-  
-  if ( dac.getDeviceCount() < 1 ) {
+
+  std::vector<unsigned int> deviceIds = dac.getDeviceIds();
+  if ( deviceIds.size() < 1 ) {
     std::cout << "\nNo audio devices found!\n";
     exit( 1 );
   }
@@ -186,12 +202,16 @@ int main( int argc, char *argv[] )
   // Set our stream parameters for output only.
   bufferFrames = 512;
   RtAudio::StreamParameters oParams;
-  oParams.deviceId = device;
   oParams.nChannels = channels;
   oParams.firstChannel = offset;
 
   if ( device == 0 )
     oParams.deviceId = dac.getDefaultOutputDevice();
+  else {
+    if ( device >= deviceIds.size() )
+      device = getDeviceIndex( dac.getDeviceNames() );
+    oParams.deviceId = deviceIds[device];
+  }
 
   options.flags = RTAUDIO_HOG_DEVICE;
   options.flags |= RTAUDIO_SCHEDULE_REALTIME;
@@ -202,14 +222,19 @@ int main( int argc, char *argv[] )
   // An error in the openStream() function can be detected either by
   // checking for a non-zero return value OR by a subsequent call to
   // isStreamOpen().
-  if ( dac.openStream( &oParams, NULL, FORMAT, fs, &bufferFrames, &saw, (void *)data, &options ) )
+  if ( dac.openStream( &oParams, NULL, FORMAT, fs, &bufferFrames, &saw, (void *)data, &options ) ) {
+    std::cout << dac.getErrorText() << std::endl;
     goto cleanup;
+  }
   if ( dac.isStreamOpen() == false ) goto cleanup;
 
   //std::cout << "Stream latency = " << dac.getStreamLatency() << "\n" << std::endl;
   
   // Stream is open ... now start it.
-  if ( dac.startStream() ) goto cleanup;
+  if ( dac.startStream() ) {
+    std::cout << dac.getErrorText() << std::endl;
+    goto cleanup;
+  }
 
   if ( checkCount ) {
     while ( dac.isStreamRunning() == true ) SLEEP( 100 );
