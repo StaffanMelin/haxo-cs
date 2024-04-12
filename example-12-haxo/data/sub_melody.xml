@@ -1,6 +1,6 @@
 <settings>
     <settingstype>DSynthSub</settingstype>
-    <voices>4</voices>
+    <voices>1</voices>
     <waveform0>1</waveform0>
     <waveform1>2</waveform1>
     <tune>0.000000000</tune>
@@ -22,7 +22,7 @@
     <eg_f_decay>0.0</eg_f_decay>
     <eg_f_sustain>1.0</eg_f_sustain>
     <eg_f_release>2.0</eg_f_release>
-    <eg_a_attack>20.0</eg_a_attack>
+    <eg_a_attack>0.2</eg_a_attack>
     <eg_a_decay>0.1</eg_a_decay>
     <eg_a_sustain>1.0</eg_a_sustain>
     <eg_a_release>5.0</eg_a_release>

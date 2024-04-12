@@ -484,7 +484,7 @@ dgen.o: ../rtDStudio/src/dgen.cpp ../rtDStudio/src/dstudio.h \
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dgen.o ../rtDStudio/src/dgen.cpp
 
 dhaxo.o: ../rtDStudio/src/dgen.cpp ../rtDStudio/src/dstudio.h \
-		../rtDStudio/src/dhaxo.h
+		../rtDStudio/src/dhaxo.h ../rtDStudio/src/dhaxo.cpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dhaxo.o ../rtDStudio/src/dhaxo.cpp
 
 dhihat.o: ../rtDStudio/src/dhihat.cpp ../rtDStudio/src/dstudio.h \

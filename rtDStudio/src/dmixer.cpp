@@ -98,8 +98,12 @@ void DMixer::Process(float *out_left, float *out_right)
     reverb_.Process(reverb_send_left, reverb_send_right, &reverb_out_left, &reverb_out_right);
 
     // add chorus and reverb
-    *out_left = (mix_left * mix_dry_+ reverb_out_left * reverb_return_ + chorus_.GetLeft() * chorus_return_) * amp_;
-    *out_right = (mix_right * mix_dry_ + reverb_out_right * reverb_return_ + chorus_.GetRight() * chorus_return_) * amp_;
+    *out_left = (mix_left * mix_dry_+ 
+        reverb_out_left * reverb_return_ + 
+        chorus_.GetLeft() * chorus_return_) * amp_;
+    *out_right = (mix_right * mix_dry_ 
+        + reverb_out_right * reverb_return_ 
+        + chorus_.GetRight() * chorus_return_) * amp_;
 }
 
 

@@ -38,6 +38,7 @@ private:
 	bool get_bit_at(uint32_t input, uint8_t n);
 	void set_bit_at(uint32_t* output, uint8_t n);
 	void clear_bit_at(uint32_t* output, uint8_t n);
+	uint8_t map_to_midi(uint32_t);
 	uint32_t keymap_;
 	std::map<uint32_t, uint8_t> notemap;
 	// i2c
@@ -63,4 +64,5 @@ private:
 	uint8_t channels_;
     DSound *synth_;
 
+	void show();
 };
