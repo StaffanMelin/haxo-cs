@@ -26,6 +26,14 @@ void DSound::NoteOn(uint8_t )
 void DSound::NoteOff(uint8_t )
 {}
 
+void DSound::SetLevel(float osc0_level, float osc1_level, float noise_level)
+{
+}
+
+void DSound::SetLevel(uint8_t channel, float value)
+{
+}
+
 void DSound::Silence()
 {}
 

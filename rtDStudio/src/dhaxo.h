@@ -10,10 +10,58 @@ extern "C"
 #include <gpiod.h>
 #include <map>
 
+#include <cmath>
+
 #include "dsound.h"
 
 #define ROWS 8
 #define COLS 3
+#define DHAXO_PRESSURE_SAMPLES 4
+#define DHAXO_PRESSURE_MAX 50000.0 // float
+#define DHAXO_PRESSUE_NORMALIZED_MIN 0.15
+#define DHAXO_PRESSUE_NORMALIZED_MAX 0.90
+
+template<typename T, size_t S>
+class DRingBuffer
+{
+	public:
+
+		void Init(T value)
+		{
+			Fill(value);
+		}
+
+		void Fill(T value)
+		{
+			for (size_t i = 0; i < S; i++)
+			{
+				buffer[i] = value;
+			}
+		}
+
+		void Insert(T value)
+		{
+			buffer[index] = value;
+			index = (index + 1) % S;
+		}
+
+		T Mean()
+		{
+			T sum = 0;
+			for (size_t i = 0; i < S; i++)
+			{
+				sum += (buffer[i] * buffer[i]);
+				// sum += buffer[i];
+			}
+			return std::sqrt(sum / S);
+			// return sum / S;
+		}
+
+	private:
+		T buffer[S];
+		size_t index;
+};
+
 
 class DHaxo
 {
@@ -35,19 +83,27 @@ public:
 
 private:
 
+	float Pressure();
+	uint32_t Keys();
+
 	bool get_bit_at(uint32_t input, uint8_t n);
 	void set_bit_at(uint32_t* output, uint8_t n);
 	void clear_bit_at(uint32_t* output, uint8_t n);
 	uint8_t map_to_midi(uint32_t);
-	uint32_t keymap_;
+
 	std::map<uint32_t, uint8_t> notemap;
+    DRingBuffer<float, DHAXO_PRESSURE_SAMPLES> ringbuffer;
+	uint32_t pressure_baseline;
+
+	uint8_t note, last_note = 0;
+	float vol, last_vol = 0.0;
+
 	// i2c
 	int adapter_nr = 1;
 	char filename[20];
 	int i2cfile;
 	int addr = 0x4D;
 	uint8_t reg = 0x10;
-	int32_t res;
 	char buf[10];
 
 	// gpio
@@ -57,12 +113,11 @@ private:
 	struct gpiod_chip *chip;
 	struct gpiod_line *line_r[ROWS];
 	struct gpiod_line *line_c[COLS];
-	int val[ROWS][COLS];
 
 	// DStudio
 	float sample_rate_;
 	uint8_t channels_;
     DSound *synth_;
 
-	void show();
+	//void show();
 };

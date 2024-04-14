@@ -67,17 +67,12 @@ int main()
 	float sample_rate = DSTUDIO_SAMPLE_RATE;
 	unsigned int rt_device;
 	unsigned int rt_channels = 2;
-	unsigned int rt_offset = 0; // channel count offset
 	unsigned int rt_buffer_frames = DSTUDIO_BUFFER_SIZE;
-	unsigned int rt_frames = 0;
 
 	RtAudio::StreamParameters rt_params;
-	unsigned int sampleRate = sample_rate;
-	unsigned int bufferFrames = 256; // 256 sample frames
  	RtAudio::StreamOptions rt_options;
 	double *data;
 	RtAudio::DeviceInfo rt_info;
-	unsigned int device_count;
 	
 	// Rtaudio init
 	RtAudio rt_dac(RtAudio::LINUX_ALSA, &errorCallback);
@@ -120,7 +115,6 @@ int main()
 	rt_device = 0;
 	std::cout << "\nFound " << deviceIds.size() << " device(s).\n";
 	std::cout << "\nAPI: " << RtAudio::getApiDisplayName(rt_dac.getCurrentApi()) << std::endl;
-	device_count = rt_dac.getDeviceCount();
 
 	std::cout << "\n";
 
@@ -203,7 +197,7 @@ int main()
 
  
 	// data storage
-	data = (double *)calloc(rt_channels, sizeof(double));
+	data = (double *)calloc(rt_channels * rt_buffer_frames, sizeof(double));
 //	double data[2] = {0, 0};
 
 	std::cout << "setup B open" << std::endl;
@@ -256,6 +250,8 @@ int main()
 		//SLEEP(100);
 	}
 
+	
+
 	// stop stream
 	if (rt_dac.isStreamRunning())
 	{
@@ -263,6 +259,7 @@ int main()
 	}
 
 cleanup:
+
 	if (rt_dac.isStreamOpen())
 	{
 		rt_dac.closeStream();

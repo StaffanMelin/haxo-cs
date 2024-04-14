@@ -18,8 +18,6 @@ void DHaxo::Init(const Config& config)
 	channels_ = config.channels;
 	synth_ = config.synth;
 
-    keymap_ = 0;
-
     // read and parse dhaxo_notemap.json
     /*
     {
@@ -67,6 +65,13 @@ void DHaxo::Init(const Config& config)
         exit(1); // TODO
     }
 
+    usleep(1000); // TODO really necessary?
+
+    // TODO noise
+    pressure_baseline = i2c_smbus_read_word_data(i2cfile, reg);
+    pressure_baseline = 0;
+    ringbuffer.Init(0.0);
+
     // GPIO
 
     // Open GPIO chip
@@ -87,8 +92,6 @@ void DHaxo::Init(const Config& config)
 
 uint8_t DHaxo::map_to_midi(uint32_t input)
 {
-    std::cout << "map2midii in:" << input << "\n";
-
     std::map<uint32_t, uint8_t>::iterator it;
     uint8_t ret;
 
@@ -102,9 +105,7 @@ uint8_t DHaxo::map_to_midi(uint32_t input)
         ret = it->second;
     }
 
-    std::cout << "Map to note:" << +ret << "\n";
-
-    std::cout << "map2midix\n";
+    // std::cout << "Map to note:" << +ret << "\n";
     return ret;
 }
 
@@ -128,14 +129,52 @@ void DHaxo::clear_bit_at(uint32_t* output, uint8_t n) {
     }
 }
 
-
-
-
-void DHaxo::Process()
+float DHaxo::Pressure()
 {
+    static uint32_t last_pressure = 0;
+	int16_t pressure;
+	float pressure_normalized; // 0.0 - 1.0
+    // get/set VOLume from pressure on I2C
+    // I get occasional noise from the sesnor....
+    // returns signer i16, or neg error
+    pressure = i2c_smbus_read_word_data(i2cfile, reg);
+    if ((pressure > DHAXO_PRESSURE_MAX) || (pressure < 0))
+    {
+        pressure = last_pressure;
+    } else {
+        last_pressure = pressure;
+    }
 
-    // I2C
-    res = i2c_smbus_read_word_data(i2cfile, reg);
+    pressure_normalized = pressure / DHAXO_PRESSURE_MAX;
+//    pressure_normalized = (pressure - pressure_baseline) / DHAXO_PRESSURE_MAX;
+//    std::cout << pressure_normalized << " <<\n";
+//    pressure_normalized = DMIN(pressure_normalized, DHAXO_PRESSUE_NORMALIZED_MAX);
+ 
+//    std::cout << pressure_normalized << " <\n";
+/*
+    pressure_normalized = 
+        (
+        (DMIN(100, (int) (pressure_normalized * 101.0)))
+        ) / 100.0f;
+ */
+//    std::cout << pressure_normalized << "\n";
+
+    if (pressure_normalized < DHAXO_PRESSUE_NORMALIZED_MIN)
+    {
+//        ringbuffer.Fill(pressure_normalized);
+        pressure_normalized = 0.0f;
+    }
+
+//    ringbuffer.Insert(pressure_normalized);
+//    pressure_normalized = ringbuffer.Mean();
+
+    return pressure_normalized;
+}
+
+
+uint32_t DHaxo::Keys()
+{
+    static uint32_t keymap = 0;
 
     // GPIO
     int key_index = 0;
@@ -144,48 +183,74 @@ void DHaxo::Process()
     {
         gpiod_line_set_value(line_r[r], 0);
         usleep(10); // let row pin settle
+
         for (int c = 0; c < COLS; c++)
         {
-            val[r][c] = gpiod_line_get_value(line_c[c]);
             // keystate now
             bool is_pressed = (gpiod_line_get_value(line_c[c]) == 0);
+
             // keystate has changed?
-            if (get_bit_at(keymap_, key_index) != is_pressed) {
-                show();
+            if (get_bit_at(keymap, key_index) != is_pressed) {
                 if (is_pressed) {
-                    std::cout << "pressed:" << key_index << "\n";
-                    set_bit_at(&keymap_, key_index);
-                    // send to mixer
-                    uint8_t note = map_to_midi(keymap_);
-                    if (note != MIDI_NOTE_NONE)
-                    {
-                        synth_->MidiIn(MIDI_MESSAGE_NOTEON + 0, note, 100);
-                        std::cout << "DHaxo Note on\n";
-                    }
+                    set_bit_at(&keymap, key_index);
                 } else {
-                    uint8_t note = map_to_midi(keymap_);
-                    clear_bit_at(&keymap_, key_index);
-                    if (note != MIDI_NOTE_NONE)
-                    {
-                        synth_->MidiIn(MIDI_MESSAGE_NOTEOFF + 0, note, 100);
-                        std::cout << "DHaxo Note off\n";
-                    }
+                    clear_bit_at(&keymap, key_index);
                 }
             }
+
             key_index++;
         }
         gpiod_line_set_value(line_r[r], 1);
         usleep(10);
     }
 
-    // get MIDI from keys
-    // ie map keymap_ to MIDI note
-    // get/set VOLume from pressure
-    // synth_->MidiIn(status, d0, d1);
+    return keymap;
+}
 
 
 
-    usleep(10);
+void DHaxo::Process()
+{
+
+    uint32_t keys = Keys();
+    float pressure = Pressure();
+
+    vol = pressure;
+    if (vol != last_vol)
+    {
+        synth_->SetLevel(0, vol);
+        last_vol = vol;
+    }
+
+    uint8_t note = map_to_midi(keys);
+    if (note != MIDI_NOTE_NONE)
+    {
+        if (note != last_note)
+        {
+            if (vol > 0.0f)
+            {
+                if (last_note > 0)
+                {
+                    // finish old note
+                    synth_->SetLevel(0, 0.0f); // hmmm....neccessary?
+                    synth_->MidiIn(MIDI_MESSAGE_NOTEOFF + 0, last_note, 0);
+                    // start new note
+                    synth_->SetLevel(0, vol);
+                    // hmmm...vol?
+                }
+                synth_->MidiIn(MIDI_MESSAGE_NOTEON + 0, note, 100);
+                last_note = note;
+            }
+        }
+        if (vol == 0.0 && last_note > 0)
+        {
+            synth_->MidiIn(MIDI_MESSAGE_NOTEOFF + 0, last_note, 0);
+            last_note = 0;
+        }
+
+    }
+
+    usleep(10); // .1ms
 
 }
 
@@ -204,9 +269,10 @@ void DHaxo::Exit()
     close(i2cfile);
 }
 
+// debug
+/*
 void DHaxo::show()
 {
-
     for (int r = 0; r < ROWS; r++)
     {
         for (int c = 0; c < COLS; c++)
@@ -216,4 +282,4 @@ void DHaxo::show()
         std::cout << "\n";
     }
     std::cout << "\n" << keymap_ << "\n";
-}
+}*/

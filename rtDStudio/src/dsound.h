@@ -29,6 +29,8 @@ public:
     virtual void NoteOn(uint8_t, uint8_t);
     virtual void NoteOn(uint8_t);
     virtual void NoteOff(uint8_t);
+    virtual void SetLevel(float, float, float);
+    virtual void SetLevel(uint8_t, float);
     virtual void Silence();
     virtual void Silence(uint8_t);
     SoundType GetType();

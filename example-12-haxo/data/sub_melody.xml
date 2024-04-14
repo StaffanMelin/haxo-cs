@@ -6,7 +6,7 @@
     <tune>0.000000000</tune>
     <detune>0.05</detune>
     <transpose>0</transpose>
-    <osc0_level>0.2</osc0_level>
+    <osc0_level>0.3</osc0_level>
     <osc1_level>0.5</osc1_level>
     <noise_level>0.0</noise_level>
     <filter_type>2</filter_type>
@@ -32,9 +32,9 @@
     <lfo_p_level>0.0</lfo_p_level>
     <lfo_f_level>0.2</lfo_f_level>
     <lfo_a_level>0.0</lfo_a_level>
-    <portamento>0.0</portamento>
-    <delay_delay>0.0</delay_delay>
-    <delay_feedback>0.0</delay_feedback>
+    <portamento>0.1</portamento>
+    <delay_delay>0.5</delay_delay>
+    <delay_feedback>0.3</delay_feedback>
     <overdrive_gain>0.0</overdrive_gain>
     <overdrive_drive>0.0</overdrive_drive>
 </settings>
