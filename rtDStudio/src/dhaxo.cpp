@@ -69,7 +69,7 @@ void DHaxo::Init(const Config& config)
 
     // TODO noise
     pressure_baseline = i2c_smbus_read_word_data(i2cfile, reg);
-    pressure_baseline = 0;
+    //pressure_baseline = 0;
     ringbuffer.Init(0.0);
 
     // GPIO
@@ -131,21 +131,49 @@ void DHaxo::clear_bit_at(uint32_t* output, uint8_t n) {
 
 float DHaxo::Pressure()
 {
-    static uint32_t last_pressure = 0;
-	int16_t pressure;
+    uint8_t values[100];
+    static int32_t last_pressure = 0;
+	int32_t pressure;
 	float pressure_normalized; // 0.0 - 1.0
     // get/set VOLume from pressure on I2C
     // I get occasional noise from the sesnor....
     // returns signer i16, or neg error
-    pressure = i2c_smbus_read_word_data(i2cfile, reg);
-    if ((pressure > DHAXO_PRESSURE_MAX) || (pressure < 0))
+    // word = 16 bit then overflow
+    /*
+    int nb = i2c_smbus_read_block_data(i2cfile, reg, values);
+    for (int i =0; i < nb; i++)
     {
-        pressure = last_pressure;
-    } else {
-        last_pressure = pressure;
+        std::cout << +values[i] << "\n";
+    }
+    */
+    int nb = read(i2cfile, values, 3);
+    int adc = (values[0] << 16) | (values[1] << 8) | values[2];
+
+    pressure = DMAX(0, adc - 527000); 
+    pressure = DMIN(200000, pressure);
+
+    pressure_normalized = pressure / 200000.0f;
+    std::cout << "read: " << adc << " norm:" << pressure_normalized << "\n";
+
+    // 4194304
+    // 528 136
+    //pressure = i2c_smbus_read_word_data(i2cfile, reg);
+    //std::cout << pressure << "\n";
+    /*
+    if (pressure < 0)
+    {
     }
 
+    if (pressure > DHAXO_PRESSURE_MAX)
+    {
+    //    std::cout << pressure << " LP:" << last_pressure << "\n";
+        pressure = last_pressure;
+    } else {
+
+        last_pressure = pressure;
+    }
     pressure_normalized = pressure / DHAXO_PRESSURE_MAX;
+*/
 //    pressure_normalized = (pressure - pressure_baseline) / DHAXO_PRESSURE_MAX;
 //    std::cout << pressure_normalized << " <<\n";
 //    pressure_normalized = DMIN(pressure_normalized, DHAXO_PRESSUE_NORMALIZED_MAX);
@@ -159,16 +187,17 @@ float DHaxo::Pressure()
  */
 //    std::cout << pressure_normalized << "\n";
 
-    if (pressure_normalized < DHAXO_PRESSUE_NORMALIZED_MIN)
-    {
+//    if (pressure_normalized < DHAXO_PRESSUE_NORMALIZED_MIN)
+//    {
 //        ringbuffer.Fill(pressure_normalized);
-        pressure_normalized = 0.0f;
-    }
+//        pressure_normalized = 0.0f;
+//    }
 
 //    ringbuffer.Insert(pressure_normalized);
 //    pressure_normalized = ringbuffer.Mean();
 
     return pressure_normalized;
+    usleep(10000);
 }
 
 

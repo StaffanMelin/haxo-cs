@@ -1,12 +1,17 @@
 #pragma once
 
+#include <fcntl.h>
+#include <sys/ioctl.h>
+//#include <i2c/i2ch.h>
+
+
 extern "C"
 {
 #include <linux/i2c-dev.h>
 #include <i2c/smbus.h>
 }
-#include <sys/ioctl.h>
-#include <fcntl.h>
+
+
 #include <gpiod.h>
 #include <map>
 
@@ -17,7 +22,7 @@ extern "C"
 #define ROWS 8
 #define COLS 3
 #define DHAXO_PRESSURE_SAMPLES 4
-#define DHAXO_PRESSURE_MAX 50000.0 // float
+#define DHAXO_PRESSURE_MAX 40000.0 // float
 #define DHAXO_PRESSUE_NORMALIZED_MIN 0.15
 #define DHAXO_PRESSUE_NORMALIZED_MAX 0.90
 
@@ -93,7 +98,7 @@ private:
 
 	std::map<uint32_t, uint8_t> notemap;
     DRingBuffer<float, DHAXO_PRESSURE_SAMPLES> ringbuffer;
-	uint32_t pressure_baseline;
+	int32_t pressure_baseline;
 
 	uint8_t note, last_note = 0;
 	float vol, last_vol = 0.0;
