@@ -39,7 +39,7 @@ void rtApp::Setup()
 
   dmix_synth[0] = &dsynthmelody;
   dmix_synth[1] = &dsynthpad;
-  dmix_level[0] = 0.4;
+  dmix_level[0] = 0.6;
   dmix_level[1] = 0.3;
   dmix_pan[0] = 0.5f;
   dmix_pan[1] = 0.2f;
@@ -71,16 +71,13 @@ void rtApp::Setup()
 
   // Send dmixer obj to be able to send MIDI to mixer
   DHaxo::Config dhaxo_config;
-  dhaxo_config.sample_rate = DSTUDIO_SAMPLE_RATE;
-  dhaxo_config.channels = 1;
+  dhaxo_config.channel = 0; // which channel in mixer
   dhaxo_config.synth = &dmixer;
   dhaxo.Init(dhaxo_config);
 
+  // start drone
   dmixer.MidiIn(MIDI_MESSAGE_NOTEON + 1, 36, 100);
-  //.Start();
-//  std::thread thaxo([dhaxoptr]() { 
-    //dhaxoptr->Process();
-//  });
+
   std::cout << "exit setup\n";
 }
 

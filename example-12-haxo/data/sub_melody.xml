@@ -10,7 +10,7 @@
     <osc1_level>0.5</osc1_level>
     <noise_level>0.0</noise_level>
     <filter_type>2</filter_type>
-    <filter_cutoff>1500.0</filter_cutoff>
+    <filter_cutoff>1800.0</filter_cutoff>
     <filter_res>0.0</filter_res>
     <eg_p_level>0.000000000</eg_p_level>
     <eg_p_attack>0.000000000</eg_p_attack>
@@ -30,9 +30,9 @@
     <lfo_freq>0.05</lfo_freq>
     <lfo_amp>1.0</lfo_amp>
     <lfo_p_level>0.0</lfo_p_level>
-    <lfo_f_level>0.2</lfo_f_level>
+    <lfo_f_level>0.5</lfo_f_level>
     <lfo_a_level>0.0</lfo_a_level>
-    <portamento>0.1</portamento>
+    <portamento>0.0</portamento>
     <delay_delay>0.5</delay_delay>
     <delay_feedback>0.3</delay_feedback>
     <overdrive_gain>0.0</overdrive_gain>

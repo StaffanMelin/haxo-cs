@@ -2,70 +2,23 @@
 
 #include <fcntl.h>
 #include <sys/ioctl.h>
-//#include <i2c/i2ch.h>
-
-
 extern "C"
 {
 #include <linux/i2c-dev.h>
 #include <i2c/smbus.h>
 }
 
-
 #include <gpiod.h>
 #include <map>
-
 #include <cmath>
 
 #include "dsound.h"
 
 #define ROWS 8
 #define COLS 3
-#define DHAXO_PRESSURE_SAMPLES 4
-#define DHAXO_PRESSURE_MAX 40000.0 // float
-#define DHAXO_PRESSUE_NORMALIZED_MIN 0.15
-#define DHAXO_PRESSUE_NORMALIZED_MAX 0.90
+#define DHAXO_PRESSURE_START 530000
+#define DHAXO_PRESSURE_MAX 270000
 
-template<typename T, size_t S>
-class DRingBuffer
-{
-	public:
-
-		void Init(T value)
-		{
-			Fill(value);
-		}
-
-		void Fill(T value)
-		{
-			for (size_t i = 0; i < S; i++)
-			{
-				buffer[i] = value;
-			}
-		}
-
-		void Insert(T value)
-		{
-			buffer[index] = value;
-			index = (index + 1) % S;
-		}
-
-		T Mean()
-		{
-			T sum = 0;
-			for (size_t i = 0; i < S; i++)
-			{
-				sum += (buffer[i] * buffer[i]);
-				// sum += buffer[i];
-			}
-			return std::sqrt(sum / S);
-			// return sum / S;
-		}
-
-	private:
-		T buffer[S];
-		size_t index;
-};
 
 
 class DHaxo
@@ -77,8 +30,7 @@ public:
 
     struct Config
     {
-    	float sample_rate;
-		uint8_t channels;
+		uint8_t channel;
         DSound *synth;
     };
 
@@ -97,7 +49,6 @@ private:
 	uint8_t map_to_midi(uint32_t);
 
 	std::map<uint32_t, uint8_t> notemap;
-    DRingBuffer<float, DHAXO_PRESSURE_SAMPLES> ringbuffer;
 	int32_t pressure_baseline;
 
 	uint8_t note, last_note = 0;
@@ -120,8 +71,7 @@ private:
 	struct gpiod_line *line_c[COLS];
 
 	// DStudio
-	float sample_rate_;
-	uint8_t channels_;
+	uint8_t channel_;
     DSound *synth_;
 
 	//void show();
