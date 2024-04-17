@@ -10,6 +10,8 @@ Audio: [demo0.ogg](https://github.com/StaffanMelin/haxo-cs/blob/master/demo0.ogg
 
 Code is running on an Raspberry Pi 4B using the current Lite (headless) Raspian OS.
 
+As for now, the magic happens mainly in [dhaxo.cpp](https://github.com/StaffanMelin/haxo-cs/blob/master/rtDStudio/src/dhaxo.cpp).
+
 License: GPL3
 
 Contact: staffan.melin@oscillator.se
