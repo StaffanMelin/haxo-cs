@@ -1,12 +1,20 @@
 # haxo-cs
 
-Prerelease.
+Prerelease, only example 12 working (for the Haxo). The rest is from a previous project (reference). More to come -- soon! Check the issues for what will happen.
 
 Code for making sounds with the [Haxophone](https://www.crowdsupply.com/cardona-bits/haxophone).
 
 Combining my DSound software synth library (based on Daisy SP) with the [Haxophone hardware](https://github.com/cardonabits/haxo-hw).
 
+Audio: [demo0.ogg](https://github.com/StaffanMelin/haxo-cs/blob/master/demo0.ogg) (All sounds from example-12-haxo demo project, incuding fx, running on the RPi.)
+
 Code is running on an Raspberry Pi 4B using the current Lite (headless) Raspian OS.
+
+As for now, the magic happens mainly in [dhaxo.cpp](https://github.com/StaffanMelin/haxo-cs/blob/master/rtDStudio/src/dhaxo.cpp).
+
+License: GPL3
+
+Contact: staffan.melin@oscillator.se
 
 ## Setting up
 
