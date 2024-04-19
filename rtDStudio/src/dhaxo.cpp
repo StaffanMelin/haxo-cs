@@ -131,8 +131,8 @@ float DHaxo::Pressure()
 	uint32_t pressure;
  	float pressure_normalized; // 0.0 - 1.0
 
-    ssize_t bytes = read(i2cfile, value, 3);
-    pressure = (value[0] << 16) | (value[1] << 8) | value[2];
+    ssize_t bytes = read(i2cfile, value, 2);
+    pressure = (value[0] << 8) | (value[1];
 
     std::cout << "read: " << pressure  << "\n";
     if (pressure > DHAXO_PRESSURE_START)
