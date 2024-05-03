@@ -214,7 +214,7 @@ void DHaxo::Process()
     uint8_t note_ = map_to_midi(keys);
     if (note_ != MIDI_NOTE_NONE)
     {
-        if (note_ != note_)
+        if (note_ != note_last_)
         {
             if (vol_ > 0.0f)
             {
