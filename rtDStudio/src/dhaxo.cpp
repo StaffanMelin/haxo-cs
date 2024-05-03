@@ -9,7 +9,7 @@
 #include "../rtDStudio/src/dstudio.h"
 #include "dhaxo.h"
 
-
+#define DEBUG
 
 void DHaxo::Init(const Config& config)
 {
@@ -42,13 +42,13 @@ void DHaxo::Init(const Config& config)
     }
     file.close();
 
-    /*
+    #ifdef DEBUG
     for(auto it = notemap_.cbegin(); it != notemap_.cend(); ++it)
     {
         std::cout << it->first << " " << it->second << "\n";
     }
     std::cout << "\n";
-    */
+    #endif
 
     // I2C
 	char filename[20];
@@ -138,11 +138,22 @@ float DHaxo::Pressure()
     uint8_t value[32];
 	uint32_t pressure;
  	float pressure_normalized; // 0.0 - 1.0
+    #ifdef DEBUG
+    static uint32_t pmin = 3000;
+    static uint32_t pmax = 0;
+    #endif
 
     ssize_t bytes = read(i2cfile_, value, 2);
     pressure = (value[0] << 8) | (value[1]);
 
-    // std::cout << "read: " << pressure  << "\n";
+    #ifdef DEBUG
+    if (pmin > pressure)
+        pmin = pressure;
+    if (pmax < pressure)
+        pmax = pressure;
+    std::cout << "read: " << pressure  << " pmin:" << pmin << " pmax:" << pmax << "\n";
+    #endif
+
     if (pressure > DHAXO_PRESSURE_START)
     {
         pressure -= DHAXO_PRESSURE_START;
@@ -150,14 +161,12 @@ float DHaxo::Pressure()
         pressure = 0;
     }
 
-    // std::cout << "read: " << pressure  << "\n";
     if (pressure > DHAXO_PRESSURE_MAX)
     {
         pressure = DHAXO_PRESSURE_MAX;
     }
 
     pressure_normalized = pressure / (float)DHAXO_PRESSURE_MAX;
-    // std::cout << "pressure: " << pressure << " norm:" << pressure_normalized << "\n";
 
     return pressure_normalized;
 }
@@ -203,6 +212,9 @@ void DHaxo::Process()
 {
     uint32_t keys = Keys();
     float pressure = Pressure();
+    #ifdef DEBUG
+    std::cout << "dhaxo pressure: " << pressure  << "  keys " << keys << "\n";
+    #endif
 
     vol_ = pressure;
     if (vol_ != vol_last_)
@@ -237,10 +249,12 @@ void DHaxo::Process()
         }
     } else {
         // no note, in control mode?
-        if (pressure < 0.0f)
+        if (pressure < 0.1f)
         {
             // up
+            #ifdef DEBUG
             show(keys);
+            #endif
             // down
 
         }
