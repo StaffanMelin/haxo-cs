@@ -115,7 +115,7 @@ void rtApp::Setup()
     dmix_mono[4] = true;
     dmix_mono[5] = true;
     dmix_mono[6] = true;
-    dmix_mono[6] = true;
+    dmix_mono[7] = true;
     dmix_group[0] = 0;
     dmix_group[1] = 1;
     dmix_group[2] = 2;

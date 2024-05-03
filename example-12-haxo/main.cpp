@@ -19,11 +19,15 @@ static void finish(int /*ignore*/)
 	done = true;
 }
 
+
+
 // error handler
 void errorCallback(RtAudioErrorType /*type*/, const std::string &errorText)
 {
 	std::cerr << "\nerrorCallback: " << errorText << "\n\n";
 }
+
+
 
 // ACB interleaved
 int audioCallback(void *output_buffer,
@@ -76,21 +80,6 @@ int main()
 	
 	// Rtaudio init
 	RtAudio rt_dac(RtAudio::LINUX_ALSA, &errorCallback);
-	/*
-	enum Api {
-		UNSPECIFIED,
-		LINUX_ALSA,
-		LINUX_PULSE
-		LINUX_OSS,
-		UNIX_JACK,
-		MACOSX_CORE,
-		WINDOWS_WASAPI,
-		WINDOWS_ASIO,
-		WINDOWS_DS,
-		RTAUDIO_DUMMY,
-		NUM_APIS
-	};
-	*/
 
 	// output all messages
 	rt_dac.showWarnings(true);
