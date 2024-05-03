@@ -11,9 +11,12 @@
 
 void rtApp::Setup()
 {
-
     // synths subtractive
     DSynthSub::Config dsynth_config;
+
+    // synth melody/haxo
+    DSettings::LoadSetting(DSettings::DSYNTHSUB, DSettings::NONE, "data/sub_haxo.xml", &dsynth_config);
+    dsynthhaxo.Init(dsynth_config);
 
     // synth bass
     DSettings::LoadSetting(DSettings::DSYNTHSUB, DSettings::NONE, "data/sub_bass.xml", &dsynth_config);
@@ -72,13 +75,7 @@ void rtApp::Setup()
     dmix_synth[4] = &dsyntharp;
     dmix_synth[5] = &dsynthembellish;
     dmix_synth[6] = &dsynthfill;
-    dmix_pan[0] = 0.5f;
-    dmix_pan[1] = 0.2f;
-    dmix_pan[2] = 0.8f;
-    dmix_pan[3] = 0.4f;
-    dmix_pan[4] = 0.6f;
-    dmix_pan[5] = 0.3f;
-    dmix_pan[6] = 0.7f;
+    dmix_synth[7] = &dsynthhaxo;
     dmix_level[0] = 0.4;//.4
     dmix_level[1] = 0.4;//.4
     dmix_level[2] = 0.2;//.2
@@ -86,6 +83,15 @@ void rtApp::Setup()
     dmix_level[4] = 0.6;//.5
     dmix_level[5] = 0.3;//.3
     dmix_level[6] = 0.35;//.35
+    dmix_level[7] = 0.5;
+    dmix_pan[0] = 0.5f;
+    dmix_pan[1] = 0.2f;
+    dmix_pan[2] = 0.8f;
+    dmix_pan[3] = 0.4f;
+    dmix_pan[4] = 0.6f;
+    dmix_pan[5] = 0.3f;
+    dmix_pan[6] = 0.7f;
+    dmix_pan[7] = 0.5f;
     dmix_chorus_level[0] = 0.0f;
     dmix_chorus_level[1] = 0.3f;
     dmix_chorus_level[2] = 0.5f;
@@ -93,6 +99,7 @@ void rtApp::Setup()
     dmix_chorus_level[4] = 0.0f;
     dmix_chorus_level[5] = 0.3f;
     dmix_chorus_level[6] = 0.7f;
+    dmix_chorus_level[7] = 0.3f;
     dmix_reverb_level[0] = 0.5f;
     dmix_reverb_level[1] = 0.5f;
     dmix_reverb_level[2] = 0.5f;
@@ -100,12 +107,14 @@ void rtApp::Setup()
     dmix_reverb_level[4] = 0.5f;
     dmix_reverb_level[5] = 0.2f;
     dmix_reverb_level[6] = 0.7f;
+    dmix_reverb_level[7] = 0.5f;
     dmix_mono[0] = true;
     dmix_mono[1] = true;
     dmix_mono[2] = true;
     dmix_mono[3] = false;
     dmix_mono[4] = true;
     dmix_mono[5] = true;
+    dmix_mono[6] = true;
     dmix_mono[6] = true;
     dmix_group[0] = 0;
     dmix_group[1] = 1;
@@ -114,8 +123,9 @@ void rtApp::Setup()
     dmix_group[4] = 4;
     dmix_group[5] = 5;
     dmix_group[6] = 6;
+    dmix_group[7] = 7;
     dmix_config.sample_rate = DSTUDIO_SAMPLE_RATE;
-    dmix_config.channels = 7;
+    dmix_config.channels = 8;
     dmix_config.amp = 1.0f;
     dmix_config.synth = dmix_synth;
     dmix_config.pan = dmix_pan;

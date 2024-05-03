@@ -23,7 +23,7 @@ INCPATH       = -I. \
 LINK          = g++
 LFLAGS        = 
 #LIBS          = $(SUBLIBS) -lpthread -lsndfile -lasound -lgpiod -li2c
-LIBS          = -lpthread -lsndfile -lasound -lgpiod -li2c
+LIBS          = $(SUBLIBS) -lpthread -lsndfile -lasound -lgpiod -li2c
 
 ####### Files
 SOURCES   = main.cpp \

@@ -12,6 +12,11 @@ class rtApp
 {
 
 private:
+    // haxo
+    DSynthSub dsynthhaxo;
+    DHaxo dhaxo;
+
+    // gen
     DSynthSub dsynthbass;
     DSynthSub dsynthhi;
     DSynthSub dsynthpad;
@@ -24,7 +29,6 @@ private:
     DFXFilter dfxfilter;
 
     DMixer dmixer;
-    DHaxo dhaxo;
 
     DGenDrone dgen;
 
