@@ -4,11 +4,10 @@
 #include "../rtDStudio/src/dsynthsub.h"
 #include "../rtDStudio/src/dsynthvar.h"
 #include "../rtDStudio/src/dsynthfm.h"
-
 #include "../rtDStudio/src/dfx.h"
 #include "../rtDStudio/src/dgen.h"
-
 #include "../rtDStudio/src/dsettings.h"
+#include "../rtDStudio/src/dhaxo.h"
 
 void rtApp::Setup()
 {
@@ -133,6 +132,12 @@ void rtApp::Setup()
     // demo start
     dmixer.SetReverb(0.9f, 2000.0f);
 
+    // Send dmixer obj to be able to send MIDI to mixer
+    DHaxo::Config dhaxo_config;
+    dhaxo_config.channel = 7; // which channel in mixer
+    dhaxo_config.synth = &dmixer;
+    dhaxo.Init(dhaxo_config);
+
     // gen note creation
 
     DGenDrone::ChannelType dgen_channel_type[MIXER_CHANNELS_MAX];
@@ -171,14 +176,20 @@ void rtApp::Setup()
     dgen.Init(dgen_config);
 
     dgen.Start();
+}
 
+
+
+void rtApp::ProcessControl()
+{
+    dgen.Process();
+    dhaxo.Process();
 }
 
 
 
 void rtApp::Process(float *sigL, float *sigR)
 {
-    dgen.Process();
     dmixer.Process(sigL, sigR);
 }
 

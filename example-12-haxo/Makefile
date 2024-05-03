@@ -37,6 +37,7 @@ SOURCES       = main.cpp \
 		../rtDStudio/src/dsound.cpp \
 		../rtDStudio/src/dsplit.cpp \
 		../rtDStudio/src/dstudio.cpp \
+		../rtDStudio/src/dsynth.cpp \
 		../rtDStudio/src/dsynthfm.cpp \
 		../rtDStudio/src/dsynthsub.cpp \
 		../rtDStudio/src/dsynthvar.cpp \
@@ -123,6 +124,7 @@ OBJECTS       = main.o \
 		dsplit.o \
 		dstudio.o \
 		dsynthfm.o \
+		dsynth.o \
 		dsynthsub.o \
 		dsynthvar.o \
 		tclap.o \
@@ -287,6 +289,7 @@ main.o: main.cpp ../rtaudio/RtAudio.h \
 		../rtDStudio/src/dsound.h \
 		../rtDStudio/src/dsplit.h \
 		../rtDStudio/src/dstudio.h \
+		../rtDStudio/src/dsynth.h \
 		../rtDStudio/src/dsynthfm.h \
 		../rtDStudio/src/dsynthsub.h \
 		../rtDStudio/src/dsynthvar.h \
@@ -316,6 +319,7 @@ rtApp.o: rtApp.cpp rtApp.h \
 		../rtDStudio/src/dsound.h \
 		../rtDStudio/src/dsplit.h \
 		../rtDStudio/src/dstudio.h \
+		../rtDStudio/src/dsynth.h \
 		../rtDStudio/src/dsynthfm.h \
 		../rtDStudio/src/dsynthsub.h \
 		../rtDStudio/src/dsynthvar.h \

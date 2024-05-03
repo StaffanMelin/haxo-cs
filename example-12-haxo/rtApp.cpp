@@ -9,14 +9,8 @@
 
 #include "../rtDStudio/src/dhaxo.h"
 
-#include <thread>
-
 void rtApp::Setup()
 {
-  std::cout << "enter setup\n";
-
-  std::cout << "setup synths\n";
-
   // synth melody
   DSynthSub::Config dsynthsub_config;
   DSettings::LoadSetting(DSettings::DSYNTHSUB, DSettings::NONE, "data/sub_melody.xml", &dsynthsub_config);
@@ -24,8 +18,6 @@ void rtApp::Setup()
   // pad
   DSettings::LoadSetting(DSettings::DSYNTHSUB, DSettings::NONE, "data/sub_pad.xml", &dsynthsub_config);
   dsynthpad.Init(dsynthsub_config);
-
-  std::cout << "setup mixer\n";
 
   // mixer
   DSound *dmix_synth[MIXER_CHANNELS_MAX];
@@ -77,8 +69,6 @@ void rtApp::Setup()
 
   // start drone
   dmixer.MidiIn(MIDI_MESSAGE_NOTEON + 1, 36, 100);
-
-  std::cout << "exit setup\n";
 }
 
 
