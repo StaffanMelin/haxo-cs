@@ -185,7 +185,7 @@ void rtApp::Setup()
     dgen_config.note_melody = dgen_note_melody;
     dgen.Init(dgen_config);
 
-    dgen.Start();
+    dgen.Start(DGen::VERSE);
 }
 
 
