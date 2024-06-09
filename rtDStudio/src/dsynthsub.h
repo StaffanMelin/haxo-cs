@@ -102,7 +102,7 @@ class DSynthSub : public DSynth
         float overdrive_drive;
     };
 
-	void Init(const Config&);
+	void Init();
 	void Set(const Config&);
 	float Process();
     void Process(float *, float *);
@@ -122,7 +122,8 @@ class DSynthSub : public DSynth
     void SetPortamento(float);
     void SetDelay(float, float);
     void SetOverdrive(float, float);
-
+    void ChangeParam(DSynth::Param param, float value);
+    
 private:
 
 	float sample_rate_;

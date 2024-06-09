@@ -4,15 +4,15 @@
 #include "dsound.h"
 
 // synth engines included in metasynth
-#include "dsynthfm.h"
-#include "dsynthsub.h"
-#include "dsynthvar.h"
-#include "dsampler.h"
+//#include "dsynthfm.h"
+//#include "dsynthsub.h"
+//#include "dsynthvar.h"
+//#include "dsampler.h"
 
-#include "oscillator.h"
 #include "adsr.h"
 #include "delayline.h"
 #include "overdrive.h"
+#include "oscillator.h"
 #include "port.h"
 #include "svf.h"
 #include "whitenoise.h"

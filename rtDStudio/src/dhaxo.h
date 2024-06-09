@@ -14,17 +14,21 @@ extern "C"
 #include <stdio.h>
 #include <iostream>
 
+#include <libserial/SerialPort.h>
+
 #include "dsound.h"
 #include "dsynth.h"
 
 #define DHAXO_KEY_ROWS 8
 #define DHAXO_KEY_COLS 3
-#define DHAXO_PRESSURE_START 2048 // 530000
-#define DHAXO_PRESSURE_MAX 3330 // 270000
+#define DHAXO_PRESSURE_START 2048
+#define DHAXO_PRESSURE_MAX 3330
 
 #define DHAXO_TARGET_MAX 16
 #define DHAXO_DIST_OFF 100
 #define DHAXO_VALUE_MAX 16
+
+#define DHAXO_SERIAL_BUFFER_SIZE 1024
 
 class DHaxo
 {
@@ -35,7 +39,7 @@ public:
 
     struct Config
     {
-        DSound *synth;
+        DSynth *synth;
 		bool hexo_connected;
 		DSynth::Param hexo_target[DHAXO_TARGET_MAX];
     };
@@ -48,9 +52,9 @@ private:
 
 	// DStudio
 	uint8_t channel_;
-    DSound *synth_;
+    DSynth *synth_;
 	bool hexo_connected_;
-	HexoTarget hexo_target_[DHAXO_TARGET_MAX];
+	DSynth::Param hexo_target_[DHAXO_TARGET_MAX];
 	
 	// module
 	std::map<uint32_t, uint8_t> notemap_;
@@ -75,7 +79,7 @@ private:
 	// private methods
 	float Pressure();
 	uint32_t Keys();
-	void DispatchController(uint8_t controller_target, uint16_t controller_value);
+	void DispatchController(DSynth::Param controller_target, float controller_value);
 
 
 	// helper methods

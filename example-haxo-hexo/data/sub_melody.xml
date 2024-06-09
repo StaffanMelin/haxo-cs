@@ -32,7 +32,7 @@
     <lfo_p_level>0.0</lfo_p_level>
     <lfo_f_level>0.5</lfo_f_level>
     <lfo_a_level>0.0</lfo_a_level>
-    <portamento>0.1</portamento>
+    <portamento>0.05</portamento>
     <delay_delay>0.5</delay_delay>
     <delay_feedback>0.3</delay_feedback>
     <overdrive_gain>0.0</overdrive_gain>

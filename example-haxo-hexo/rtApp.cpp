@@ -55,11 +55,12 @@ void rtApp::Setup()
   // init haxo
   DHaxo::Config dhaxo_config;
   dhaxo_config.synth = &dsynthmelody;
-  dhaxo_config.hexo_connected = true;
+  dhaxo_config.hexo_connected = false;
+
   // order of hexo_target maps to order of values received from hexo controller
-  dhaxo_config.hexo_target = {DSynth::DSYNTH_PARAM_TUNE, 
-                              DSynth::DSYNTH_PARAM_FILTER_CUTOFF, 
-                              DSynth::DSYNTH_PARAM_LFO_AMP};
+  dhaxo_config.hexo_target[0] = DSynth::DSYNTH_PARAM_TUNE; 
+  dhaxo_config.hexo_target[1] = DSynth::DSYNTH_PARAM_FILTER_CUTOFF; 
+  dhaxo_config.hexo_target[2] = DSynth::DSYNTH_PARAM_LFO_AMP;
   dhaxo.Init(dhaxo_config);
 
 }

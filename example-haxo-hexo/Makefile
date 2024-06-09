@@ -12,7 +12,7 @@ CXXFLAGS      = -pipe -O2 -Wall -Wextra -fPIC $(DEFINES)
 INCPATH       = -I. -I. -I../rtDStudio/src -I../rtDaisySP/src/Control -I../rtDaisySP/src/Drums -I../rtDaisySP/src/Dynamics -I../rtDaisySP/src/Effects -I../rtDaisySP/src/Filters -I../rtDaisySP/src/Noise -I../rtDaisySP/src/PhysicalModeling -I../rtDaisySP/src/Synthesis -I../rtDaisySP/src/Utility
 LINK          = g++
 LFLAGS        = 
-LIBS          = $(SUBLIBS) -lpthread -lsndfile -lasound -lpthread -lgpiod -li2c
+LIBS          = $(SUBLIBS) -lpthread -lsndfile -lasound -lpthread -lgpiod -li2c -lserial
 
 ####### Files
 
@@ -624,6 +624,18 @@ dsplit.o: ../rtDStudio/src/dsplit.cpp ../rtDStudio/src/dstudio.h \
 
 dstudio.o: ../rtDStudio/src/dstudio.cpp ../rtDStudio/src/dstudio.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dstudio.o ../rtDStudio/src/dstudio.cpp
+
+dsynth.o: ../rtDStudio/src/dsynth.cpp ../rtDStudio/src/dsynth.h \
+		../rtDStudio/src/dstudio.h \
+		../rtDStudio/src/dsound.h \
+		../rtDaisySP/src/Control/adsr.h \
+		../rtDaisySP/src/Utility/delayline.h \
+		../rtDaisySP/src/Effects/overdrive.h \
+		../rtDaisySP/src/Synthesis/oscillator.h \
+		../rtDaisySP/src/Utility/port.h \
+		../rtDaisySP/src/Filters/svf.h \
+		../rtDaisySP/src/Noise/whitenoise.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dsynth.o ../rtDStudio/src/dsynth.cpp
 
 dsynthfm.o: ../rtDStudio/src/dsynthfm.cpp ../rtDStudio/src/dsynthfm.h \
 		../rtDStudio/src/dstudio.h \

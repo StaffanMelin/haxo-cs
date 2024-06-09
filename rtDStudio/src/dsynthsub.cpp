@@ -132,7 +132,7 @@ void DSynthSub::Set(const Config& config)
 		svf_[i].SetDrive(0.0f); // default
 	
 		// portamento
-		port_[i].SetHTime(portamento_);    
+		port_[i].SetHtime(portamento_);    
 
         // note data
         note_midi_[i] = 0;
@@ -531,7 +531,7 @@ void DSynthSub::ChangeParam(DSynth::Param param, float value)
             delay_feedback_ = base_config_.delay_feedback * value;
             break;
         case DSynth::DSYNTH_PARAM_DELAY_FREQ:
-            SetDelay(base_config.delay_delay * value, delay_feedback_);
+            SetDelay(base_config_.delay_delay * value, delay_feedback_);
             break;
         case DSynth::DSYNTH_PARAM_DETUNE:
             SetTuning(tune_, base_config_.detune * value);

@@ -2,7 +2,7 @@
 #include <iostream>
 #include <map>
 #include <stdio.h>
-#include <string>
+#include <string.h>
 #include <unistd.h>
 
 #include "../rtDStudio/src/dstudio.h"
@@ -10,7 +10,6 @@
 #include "dsynth.h"
 
 #define DEBUG
-#include <libserial/SerialPort.h>
 
 void DHaxo::Init(const Config& config)
 {
@@ -100,12 +99,12 @@ void DHaxo::Init(const Config& config)
     if (hexo_connected_)
     {
         // TODO error check
-        serial_port.Open("/dev/ttyACM0");
-        serial_port.SetBaudRate(LibSerial::BaudRate::BAUD_38400);
-        serial_port.SetCharacterSize(LibSerial::CharacterSize::CHAR_SIZE_8);
-        serial_port.SetFlowControl(LibSerial::FlowControl::FLOW_CONTROL_NONE);
-        serial_port.SetParity(LibSerial::Parity::PARITY_ODD);
-        serial_port.SetStopBits(LibSerial::StopBits::STOP_BITS_1) ;
+        serial_port_.Open("/dev/ttyACM0");
+        serial_port_.SetBaudRate(LibSerial::BaudRate::BAUD_38400);
+        serial_port_.SetCharacterSize(LibSerial::CharacterSize::CHAR_SIZE_8);
+        serial_port_.SetFlowControl(LibSerial::FlowControl::FLOW_CONTROL_NONE);
+        serial_port_.SetParity(LibSerial::Parity::PARITY_ODD);
+        serial_port_.SetStopBits(LibSerial::StopBits::STOP_BITS_1) ;
 
         serial_buffer_next_ = 0;
     }
@@ -232,7 +231,7 @@ uint32_t DHaxo::Keys()
 
 
 
-void DHaxo::DispatchController(uint8_t controller_target, float controller_value)
+void DHaxo::DispatchController(DSynth::Param controller_target, float controller_value)
 {
 
     // 
@@ -246,11 +245,11 @@ void DHaxo::DispatchController(uint8_t controller_target, float controller_value
             DSYNTH_PARAM_DETUNE,
             DSYNTH_PARAM_TRANSPOSE,
     */
-   uint8_t target = hexo_target_[controller_target];
-   if (!(target == DSYNTH_PARAM_TUNE ||
-       target == DSYNTH_PARAM_DETUNE,
-       target == DSYNTH_PARAM_TRANSPOSE))
-)   {
+   DSynth::Param target = hexo_target_[controller_target];
+   if (!(target == DSynth::DSYNTH_PARAM_TUNE ||
+       target == DSynth::DSYNTH_PARAM_DETUNE ||
+       target == DSynth::DSYNTH_PARAM_TRANSPOSE))
+    {
         controller_value = abs(controller_value);
     }
 
@@ -294,7 +293,7 @@ void DHaxo::Process()
                 note_last_ = note_;
             }
         }
-        if (vol_ == 0.0f && note_last_ > 0)
+        if (vol_ < 0.05f && note_last_ > 0)
         {
             synth_->MidiIn(MIDI_MESSAGE_NOTEOFF + channel_, note_last_, 0);
             note_last_ = 0;
@@ -335,21 +334,26 @@ void DHaxo::Process()
         uint8_t hexo_controller = 0;
         while (serial_port_.GetNumberOfBytesAvailable() > 0)
         {
-            char c = serial_port_.ReadByte();
+            char c;
+            serial_port_.ReadByte(c);
             serial_buffer_[serial_buffer_next_++] = c;
             if (c == '\n')
             {
+                char *token;
+                char *sbuffer;
+                char *token_end;
+                sbuffer = serial_buffer_;
                 // we now have a line of values, 16bit ints separated by commas
-                while (((token = strsep(&serial_buffer_,";")) != NULL)
+                while ((token = strsep(&sbuffer,";")) != NULL)
                 {
-                    float token_value = strtof(token);
+                    float token_value = strtof(token, &token_end);
 
                     hexo_value_[hexo_controller] = token_value;
 
                     hexo_controller++;
                 }
                 serial_buffer_next_ = 0;
-                for (size_t i = 0: i < (hexo_controller - 1; i++))
+                for (uint8_t i = 0; i < (hexo_controller - 1); i++)
                 {
                     DispatchController(hexo_target_[i], hexo_value_[i]);
                 }
@@ -378,7 +382,7 @@ void DHaxo::Exit()
 
     if (hexo_connected_)
     {
-        serial_port.Close();
-        delete serial_buffer_;
+        serial_port_.Close();
+        // delete serial_buffer_;
     }
 }
