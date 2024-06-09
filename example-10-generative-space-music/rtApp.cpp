@@ -145,6 +145,7 @@ void rtApp::Setup()
     // Send dmixer obj to be able to send MIDI to mixer
     DHaxo::Config dhaxo_config;
     dhaxo_config.channel = 7; // which channel in mixer
+    dhaxo_config.hexo_connected = false;
     dhaxo_config.synth = &dmixer;
     dhaxo.Init(dhaxo_config);
 

@@ -42,6 +42,23 @@ class DSynth : public DSound
         // dsound *
     };
 
+    enum Param
+    {
+        DSYNTH_PARAM_NONE = 0,
+        DSYNTH_PARAM_TUNE,
+        DSYNTH_PARAM_DETUNE,
+        DSYNTH_PARAM_TRANSPOSE,
+        DSYNTH_PARAM_FILTER_CUTOFF,
+        DSYNTH_PARAM_FILTER_RES,
+        DSYNTH_PARAM_AMP,
+        DSYNTH_PARAM_LFO_AMP,
+        DSYNTH_PARAM_LFO_FREQ,
+        DSYNTH_PARAM_DELAY_FEEDBACK,
+        DSYNTH_PARAM_DELAY_FREQ,
+        DSYNTH_PARAM_OVERDRIVE,
+        DSYNTH_PARAM_LAST
+    };
+
 	void Init(const Config&);
 	float Process();
     void Process(float *, float *);
@@ -49,6 +66,7 @@ class DSynth : public DSound
     void NoteOn(uint8_t midi_note, uint8_t midi_velocity = MIDI_VELOCITY_MAX);
 	void NoteOff(uint8_t midi_note);
 
+    void ChangeParam(Param param, float value);
     void Silence();
 
     /*

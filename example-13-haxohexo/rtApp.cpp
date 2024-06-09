@@ -14,10 +14,8 @@ void rtApp::Setup()
   // synth melody
   DSynthSub::Config dsynthsub_config;
   DSettings::LoadSetting(DSettings::DSYNTHSUB, DSettings::NONE, "data/sub_melody.xml", &dsynthsub_config);
-  dsynthmelody.Init(dsynthsub_config);
-  // pad
-  DSettings::LoadSetting(DSettings::DSYNTHSUB, DSettings::NONE, "data/sub_pad.xml", &dsynthsub_config);
-  dsynthpad.Init(dsynthsub_config);
+  dsynthmelody.Init();
+  dsynthmelody.Set(dsynthsub_config);
 
   // mixer
   DSound *dmix_synth[MIXER_CHANNELS_MAX];
@@ -30,21 +28,14 @@ void rtApp::Setup()
   DMixer::Config dmix_config;
 
   dmix_synth[0] = &dsynthmelody;
-  dmix_synth[1] = &dsynthpad;
   dmix_level[0] = 0.6;
-  dmix_level[1] = 0.3;
   dmix_pan[0] = 0.5f;
-  dmix_pan[1] = 0.2f;
   dmix_chorus_level[0] = 0.2f;
-  dmix_chorus_level[1] = 0.0f;
   dmix_reverb_level[0] = 0.5f;
-  dmix_reverb_level[1] = 0.6f;
   dmix_mono[0] = true;
-  dmix_mono[1] = true;
   dmix_group[0] = 0;
-  dmix_group[1] = 1;
   dmix_config.sample_rate = DSTUDIO_SAMPLE_RATE;
-  dmix_config.channels = 2;
+  dmix_config.channels = 1;
   dmix_config.amp = 0.5f;
   dmix_config.synth = dmix_synth;
   dmix_config.pan = dmix_pan;
@@ -61,15 +52,16 @@ void rtApp::Setup()
   // demo start
   dmixer.SetReverb(0.9f, 2000.0f);
 
-  // Send dmixer obj to be able to send MIDI to mixer
+  // init haxo
   DHaxo::Config dhaxo_config;
-  dhaxo_config.channel = 0; // which channel in mixer
+  dhaxo_config.synth = &dsynthmelody;
   dhaxo_config.hexo_connected = true;
-  dhaxo_config.synth = &dmixer;
+  // order of hexo_target maps to order of values received from hexo controller
+  dhaxo_config.hexo_target = {DSynth::DSYNTH_PARAM_TUNE, 
+                              DSynth::DSYNTH_PARAM_FILTER_CUTOFF, 
+                              DSynth::DSYNTH_PARAM_LFO_AMP};
   dhaxo.Init(dhaxo_config);
 
-  // start drone
-  dmixer.MidiIn(MIDI_MESSAGE_NOTEON + 1, 36, 100);
 }
 
 
@@ -85,4 +77,3 @@ void rtApp::Process(float *sigL, float *sigR)
 {
   dmixer.Process(sigL, sigR);
 }
-

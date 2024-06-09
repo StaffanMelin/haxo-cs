@@ -2,7 +2,7 @@
 
 #include "dstudio.h"
 #include "dsound.h"
-#include "dsynthsub.h"
+#include "dsynth.h"
 
 #include "oscillator.h"
 #include "adsr.h"
@@ -20,7 +20,7 @@
 
 // using namespace daisysp;
 
-class DSynthSub : public DSound
+class DSynthSub : public DSynth
 {
 
 	public:
@@ -103,6 +103,7 @@ class DSynthSub : public DSound
     };
 
 	void Init(const Config&);
+	void Set(const Config&);
 	float Process();
     void Process(float *, float *);
     void MidiIn(uint8_t, uint8_t, uint8_t);
@@ -163,6 +164,8 @@ private:
     float overdrive_gain_;
     float overdrive_drive_;
 
+    Config base_config_;
+    
 	uint8_t osc_next_;
     uint8_t note_midi_[DSYNTHSUB_VOICES_MAX];
     float note_freq_[DSYNTHSUB_VOICES_MAX];

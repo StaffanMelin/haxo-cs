@@ -2,8 +2,61 @@
 
 
 
-void DSynthSub::Init(const Config& config)
+void DSynthSub::Init()
 {
+	sample_rate_ = DSTUDIO_SAMPLE_RATE;
+	voices_ = DSYNTHSUB_VOICES_MAX;
+
+    // noise, shared
+    noise_.Init();
+
+	for (uint8_t i = 0; i < voices_; i++)
+	{
+		// oscillators
+		osc0_[i].Init(sample_rate_);
+		osc1_[i].Init(sample_rate_);
+
+        // EG - pitch, filter, amplitude
+        eg_p_[i].Init(sample_rate_);
+        eg_f_[i].Init(sample_rate_);
+		eg_a_[i].Init(sample_rate_);
+
+		// filter
+		svf_[i].Init(sample_rate_);
+	
+		// portamento
+		port_[i].Init(sample_rate_, 0);    
+
+        // note data
+        note_midi_[i] = 0;
+        note_freq_[i] = 0.0f;
+        note_velocity_[i] = 0.0f;
+    }
+
+	// lfo
+
+	lfo_.Init(sample_rate_);
+
+    // delay
+
+    delay_.Init();
+
+    // overdrive
+
+    overdrive_.Init();
+
+    // init
+    osc_next_ = 0; // circular buffer of midi notes
+
+    SetType(TUNED);
+}   
+
+
+
+void DSynthSub::Set(const Config& config)
+{
+    base_config_ = config;
+
 	sample_rate_ = config.sample_rate;
 	voices_ = config.voices;
 	waveform0_ = config.waveform0;
@@ -44,52 +97,42 @@ void DSynthSub::Init(const Config& config)
     overdrive_drive_ = config.overdrive_drive;
 
     // noise, shared
-    noise_.Init();
+    // already inited, no setup needed
 
 	for (uint8_t i = 0; i < voices_; i++)
 	{
 		// oscillators
-	
-		osc0_[i].Init(sample_rate_);
 		osc0_[i].SetWaveform(waveform0_);
 		osc0_[i].SetAmp(0.5f); // default
         osc0_[i].SetFreq(440.0f + tune_); // default
 
-		osc1_[i].Init(sample_rate_);
 		osc1_[i].SetWaveform(waveform1_);
 		osc1_[i].SetAmp(0.5f); // default
         osc1_[i].SetFreq(440.0f + tune_ + detune_); // default
 
         // EG - pitch, filter, amplitude
-
-        eg_p_[i].Init(sample_rate_);
         eg_p_[i].SetTime(daisysp::ADSR_SEG_ATTACK, eg_p_attack_);
         eg_p_[i].SetTime(daisysp::ADSR_SEG_DECAY, eg_p_decay_);
         eg_p_[i].SetTime(daisysp::ADSR_SEG_RELEASE, eg_p_release_);
         eg_p_[i].SetSustainLevel(eg_p_sustain_);
 
-        eg_f_[i].Init(sample_rate_);
         eg_f_[i].SetTime(daisysp::ADSR_SEG_ATTACK, eg_f_attack_);
         eg_f_[i].SetTime(daisysp::ADSR_SEG_DECAY, eg_f_decay_);
         eg_f_[i].SetTime(daisysp::ADSR_SEG_RELEASE, eg_f_release_);
         eg_f_[i].SetSustainLevel(eg_f_sustain_);
 
-		eg_a_[i].Init(sample_rate_);
         eg_a_[i].SetTime(daisysp::ADSR_SEG_ATTACK, eg_a_attack_);
         eg_a_[i].SetTime(daisysp::ADSR_SEG_DECAY, eg_a_decay_);
         eg_a_[i].SetTime(daisysp::ADSR_SEG_RELEASE, eg_a_release_);
 		eg_a_[i].SetSustainLevel(eg_a_sustain_);
 
 		// filter
-
-		svf_[i].Init(sample_rate_);
 		svf_[i].SetFreq(filter_cutoff_);
 		svf_[i].SetRes(filter_res_);
 		svf_[i].SetDrive(0.0f); // default
 	
 		// portamento
-		
-		port_[i].Init(sample_rate_, portamento_);    
+		port_[i].SetHTime(portamento_);    
 
         // note data
         note_midi_[i] = 0;
@@ -98,27 +141,19 @@ void DSynthSub::Init(const Config& config)
     }
 
 	// lfo
-
-	lfo_.Init(sample_rate_);
 	lfo_.SetWaveform(lfo_waveform_);
 	lfo_.SetFreq(lfo_freq_);
 	lfo_.SetAmp(lfo_amp_);
 
     // delay
-
-    delay_.Init();
     delay_.SetDelay(sample_rate_ * delay_delay_);
 
     // overdrive
-
-    overdrive_.Init();
     overdrive_.SetDrive(overdrive_drive_);
 
     // init
     osc_next_ = 0; // circular buffer of midi notes
-
-    SetType(TUNED);
-}
+}   
 
 
 
@@ -478,4 +513,55 @@ void DSynthSub::SetOverdrive(float overdrive_gain, float overdrive_drive)
     overdrive_gain_ = overdrive_gain;
     overdrive_drive_ = overdrive_drive;
     overdrive_.SetDrive(overdrive_drive_);
+}
+
+/*
+    value goes from 0 to +1.0
+*/
+void DSynthSub::ChangeParam(DSynth::Param param, float value)
+{
+    switch (param)
+    {
+        case DSynth::DSYNTH_PARAM_AMP:
+            SetLevel(base_config_.osc0_level * value,
+                    base_config_.osc1_level * value,
+                    base_config_.noise_level * value);
+            break;
+        case DSynth::DSYNTH_PARAM_DELAY_FEEDBACK:
+            delay_feedback_ = base_config_.delay_feedback * value;
+            break;
+        case DSynth::DSYNTH_PARAM_DELAY_FREQ:
+            SetDelay(base_config.delay_delay * value, delay_feedback_);
+            break;
+        case DSynth::DSYNTH_PARAM_DETUNE:
+            SetTuning(tune_, base_config_.detune * value);
+            break;
+        case DSynth::DSYNTH_PARAM_FILTER_CUTOFF:
+            SetFilter(filter_type_, 
+                    base_config_.filter_cutoff * value,
+                    filter_res_);
+            break;
+        case DSynth::DSYNTH_PARAM_FILTER_RES:
+            SetFilter(filter_type_, 
+                    filter_cutoff_,
+                    base_config_.filter_res * value);
+            break;
+        case DSynth::DSYNTH_PARAM_LFO_AMP:
+            lfo_amp_ = base_config_.lfo_amp * value;
+            lfo_.SetAmp(lfo_amp_);
+            break;
+        case DSynth::DSYNTH_PARAM_LFO_FREQ:
+            lfo_freq_ = base_config_.lfo_freq * value;
+            lfo_.SetFreq(lfo_freq_);
+            break;
+        case DSynth::DSYNTH_PARAM_OVERDRIVE:
+            SetOverdrive(overdrive_gain_, base_config_.overdrive_drive + value);
+            break;
+        case DSynth::DSYNTH_PARAM_TRANSPOSE:
+            SetTranspose(base_config_.transpose * value);
+            break;
+        case DSynth::DSYNTH_PARAM_TUNE:
+            SetTuning(base_config_.tune + value, detune_);
+            break;
+    }   
 }

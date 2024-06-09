@@ -44,6 +44,10 @@ void DSynth::NoteOff(uint8_t midi_note)
 {
 }	
 
+void DSynth::ChangeParam(Param param, float value1, float value2)
+{
+}	
+
 void DSynth::Silence()
 {
 }

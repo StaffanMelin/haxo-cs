@@ -2,19 +2,28 @@
 #include <iostream>
 #include <map>
 #include <stdio.h>
-
 #include <string>
 #include <unistd.h>
 
 #include "../rtDStudio/src/dstudio.h"
 #include "dhaxo.h"
+#include "dsynth.h"
 
-
+#include <libserial/SerialPort.h>
 
 void DHaxo::Init(const Config& config)
 {
-	channel_ = config.channel;
 	synth_ = config.synth;
+    channel_ = 0;
+    hexo_connected_ = config.hexo_connected;
+    for (size_t i = 0; i < DHAXO_TARGET_MAX; i++)
+    {
+        hexo_target_[i] = config.hexo_target[i];
+    }
+    for (size_t i = 0; i < DHAXO_VALUE_MAX; i++)
+    {
+        hexo_value_[i] = 0;
+    }
 
     // read and parse dhaxo_notemap.json
     /*
@@ -86,6 +95,19 @@ void DHaxo::Init(const Config& config)
         line_c_[i] = gpiod_chip_get_line(chip_, pin_c[i]);
         gpiod_line_request_input(line_c_[i], "example1");
     }
+
+    if (hexo_connected_)
+    {
+        // TODO error check
+        serial_port.Open("/dev/ttyACM0");
+        serial_port.SetBaudRate(LibSerial::BaudRate::BAUD_38400);
+        serial_port.SetCharacterSize(LibSerial::CharacterSize::CHAR_SIZE_8);
+        serial_port.SetFlowControl(LibSerial::FlowControl::FLOW_CONTROL_NONE);
+        serial_port.SetParity(LibSerial::Parity::PARITY_ODD);
+        serial_port.SetStopBits(LibSerial::StopBits::STOP_BITS_1) ;
+
+        serial_buffer_next_ = 0;
+    }
 }
 
 
@@ -133,6 +155,7 @@ void DHaxo::clear_bit_at(uint32_t* output, uint8_t n) {
 
 
 // get pressure from sensor on I2C
+// value is normalized from 0.0-1.0
 float DHaxo::Pressure()
 {
     uint8_t value[32];
@@ -199,6 +222,34 @@ uint32_t DHaxo::Keys()
 
 
 
+void DHaxo::DispatchController(uint8_t controller_target, float controller_value)
+{
+
+    // 
+    // !!!neg values (mod wheel: )
+    /*
+        float 0.0 - 1.0 or -1.0 - 1.0
+        value_normalized can be negative (eg mod wheel)
+        but negative values are only allowed/working for:
+            transpose, tune, detune
+            DSYNTH_PARAM_TUNE,
+            DSYNTH_PARAM_DETUNE,
+            DSYNTH_PARAM_TRANSPOSE,
+    */
+   uint8_t target = hexo_target_[controller_target];
+   if (!(target == DSYNTH_PARAM_TUNE ||
+       target == DSYNTH_PARAM_DETUNE,
+       target == DSYNTH_PARAM_TRANSPOSE))
+)   {
+        controller_value = abs(controller_value);
+    }
+
+    synth_->ChangeParam(target, controller_value);
+
+}
+
+
+
 void DHaxo::Process()
 {
     uint32_t keys = Keys();
@@ -246,6 +297,51 @@ void DHaxo::Process()
         }
     }
 
+    // TODO NOTE if target is pressure/volume/amp then
+    // controller will "overwrite" pressure sensor
+    // ie TARGET_AMP is stupid?
+    if (hexo_connected_)
+    {
+        /*
+            Format of input:
+            <pitch>,<modwheel>,<distancesensor>\n
+
+            pitch = read value from analog pot, int
+            modwheel = read value from analog pot, int
+            distance sensor = distance in cm's, int
+
+            so the targets and values must match per index
+            ie
+            order of received value -> hexo_value_[n]
+            hexo_value_[n] is sent to hexo_target_[n]
+        */
+
+        //int available = serial_port_.GetNumberOfBytesAvailable() > 0;
+        uint8_t hexo_controller = 0;
+        while (serial_port_.GetNumberOfBytesAvailable() > 0)
+        {
+            char c = serial_port_.ReadByte();
+            serial_buffer_[serial_buffer_next_++] = c;
+            if (c == '\n')
+            {
+                // we now have a line of values, 16bit ints separated by commas
+                while (((token = strsep(&serial_buffer_,";")) != NULL)
+                {
+                    float token_value = strtof(token);
+
+                    hexo_value_[hexo_controller] = token_value;
+
+                    hexo_controller++;
+                }
+                serial_buffer_next_ = 0;
+                for (size_t i = 0: i < (hexo_controller - 1; i++))
+                {
+                    DispatchController(hexo_target_[i], hexo_value_[i]);
+                }
+            }
+        }
+    }
+
     usleep(10); // .01ms
 }
 
@@ -264,4 +360,10 @@ void DHaxo::Exit()
     }
     gpiod_chip_close(chip_);
     close(i2cfile_);
+
+    if (hexo_connected_)
+    {
+        serial_port.Close();
+        delete serial_buffer_;
+    }
 }

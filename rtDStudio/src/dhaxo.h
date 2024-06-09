@@ -15,13 +15,17 @@ extern "C"
 #include <iostream>
 
 #include "dsound.h"
+#include "dsynth.h"
 
 #define DHAXO_KEY_ROWS 8
 #define DHAXO_KEY_COLS 3
 #define DHAXO_PRESSURE_START 530000
 #define DHAXO_PRESSURE_MAX 270000
+#define DHAXO_SERIAL_BUFFER_SIZE 2048
 
-
+#define DHAXO_TARGET_MAX 16
+#define DHAXO_DIST_OFF 100
+#define DHAXO_VALUE_MAX 16
 
 class DHaxo
 {
@@ -32,8 +36,9 @@ public:
 
     struct Config
     {
-		uint8_t channel;
         DSound *synth;
+		bool hexo_connected;
+		DSynth::Param hexo_target[DHAXO_TARGET_MAX];
     };
 
 	void Init(const Config&);
@@ -45,21 +50,34 @@ private:
 	// DStudio
 	uint8_t channel_;
     DSound *synth_;
+	bool hexo_connected_;
+	HexoTarget hexo_target_[DHAXO_TARGET_MAX];
+	
 	// module
 	std::map<uint32_t, uint8_t> notemap_;
 	int32_t pressure_baseline_;
 	uint8_t note_, note_last_ = MIDI_NOTE_NONE;
 	float vol_, vol_last_ = 0.0;
-	// i2c
+	
+	// i2c - pressure sensor
 	int i2cfile_;
 	struct gpiod_chip *chip_;
-	// gpio
+	
+	// gpio - keys
 	struct gpiod_line *line_r_[DHAXO_KEY_ROWS];
 	struct gpiod_line *line_c_[DHAXO_KEY_COLS];
+	
+	// Hexo foot controller - serial port
+	LibSerial::SerialPort serial_port_;
+	char serial_buffer_[DHAXO_SERIAL_BUFFER_SIZE];
+	uint16_t serial_buffer_next_;
+	float hexo_value_[DHAXO_VALUE_MAX];
 
 	// private methods
 	float Pressure();
 	uint32_t Keys();
+	void DispatchController(uint8_t controller_target, uint16_t controller_value);
+
 
 	// helper methods
 	bool get_bit_at(uint32_t input, uint8_t n);
