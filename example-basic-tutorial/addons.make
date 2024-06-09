@@ -1,4 +1,0 @@
-ofxDaisySP
-ofxDStudio
-ofxXmlSettings
-
