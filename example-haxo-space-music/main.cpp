@@ -92,6 +92,11 @@ int main()
 		goto cleanup;
 	}
 	
+   	std::cout << "\nFound " << deviceIds.size() << " device(s).\n";
+	std::cout << "\nAPI: " << RtAudio::getApiDisplayName(rt_dac.getCurrentApi()) << std::endl;
+
+	std::cout << "\n";
+
 	// list device information
 	// and set our device id
 	rt_device = 0;
@@ -103,9 +108,49 @@ int main()
 		{
 			rt_device = deviceIds[i];
 		}
+
+   		std::cout << "Device Name = " << rt_info.name << "\n";
+		std::cout << "Device ID = " << deviceIds[i] << "\n";
+		std::cout << "Output Channels = " << rt_info.outputChannels << "\n";
+		std::cout << "Input Channels = " << rt_info.inputChannels << "\n";
+		std::cout << "Duplex Channels = " << rt_info.duplexChannels << "\n";
+		if (rt_info.isDefaultOutput)
+			std::cout << "Default output device.\n";
+		else
+			std::cout << "NOT default output device.\n";
+		if (rt_info.isDefaultInput)
+			std::cout << "Default input device.\n";
+		else
+			std::cout << "NOT default input device.\n";
+		if (rt_info.nativeFormats & RTAUDIO_SINT8)
+			std::cout << "  8-bit int\n";
+		if (rt_info.nativeFormats & RTAUDIO_SINT16)
+			std::cout << "  16-bit int\n";
+		if (rt_info.nativeFormats & RTAUDIO_SINT24)
+			std::cout << "  24-bit int\n";
+		if (rt_info.nativeFormats & RTAUDIO_SINT32)
+			std::cout << "  32-bit int\n";
+		if (rt_info.nativeFormats & RTAUDIO_FLOAT32)
+			std::cout << "  32-bit float\n";
+		if (rt_info.nativeFormats & RTAUDIO_FLOAT64)
+			std::cout << "  64-bit float\n";
+
+		if (rt_info.sampleRates.size() < 1) {
+			std::cout << "No supported sample rates found!";
+		} else {
+			std::cout << "Supported sample rates = ";
+			for (unsigned int j = 0; j < rt_info.sampleRates.size(); j++)
+				std::cout << rt_info.sampleRates[j] << " ";
+		}
+		std::cout << std::endl;
+		if (rt_info.preferredSampleRate == 0)
+			std::cout << "No preferred sample rate found!" << std::endl;
+		else
+			std::cout << "Preferred sample rate = " << rt_info.preferredSampleRate << std::endl;
 	}
 	
     // setup output
+	std::cout << "SET Device Name = " << rt_device << "\n";
 	rt_params.deviceId = rt_device; //rt_dac.getDefaultOutputDevice();
 	rt_params.nChannels = rt_channels;
 	rt_params.firstChannel = 0;
@@ -130,6 +175,9 @@ int main()
         goto cleanup;
     }
   
+  	std::cout << "Stream latency = " << rt_dac.getStreamLatency() << "\n"
+			  << std::endl;
+
     // start stream
 	if (rt_dac.startStream())
     {

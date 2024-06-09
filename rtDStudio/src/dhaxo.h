@@ -19,9 +19,8 @@ extern "C"
 
 #define DHAXO_KEY_ROWS 8
 #define DHAXO_KEY_COLS 3
-#define DHAXO_PRESSURE_START 530000
-#define DHAXO_PRESSURE_MAX 270000
-#define DHAXO_SERIAL_BUFFER_SIZE 2048
+#define DHAXO_PRESSURE_START 2048 // 530000
+#define DHAXO_PRESSURE_MAX 3330 // 270000
 
 #define DHAXO_TARGET_MAX 16
 #define DHAXO_DIST_OFF 100
@@ -94,6 +93,6 @@ private:
 				std::cout << "1";
 			}
 		}
-		std::cout << "\n" << keys << "\n";
+		std::cout << " " << keys << "\n";
 	}
 };
