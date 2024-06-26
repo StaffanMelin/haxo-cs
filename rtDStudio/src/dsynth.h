@@ -59,15 +59,16 @@ class DSynth : public DSound
         DSYNTH_PARAM_LAST
     };
 
-	void Init(const Config&);
-	float Process();
-    void Process(float *, float *);
-    void MidiIn(uint8_t, uint8_t, uint8_t);
-    void NoteOn(uint8_t midi_note, uint8_t midi_velocity = MIDI_VELOCITY_MAX);
-	void NoteOff(uint8_t midi_note);
+	virtual void Init(const Config&);
+	virtual float Process();
+    virtual void Process(float *, float *);
+    virtual void MidiIn(uint8_t, uint8_t, uint8_t);
+    virtual void NoteOn(uint8_t midi_note, uint8_t midi_velocity = MIDI_VELOCITY_MAX);
+	virtual void NoteOff(uint8_t midi_note);
 
-    void ChangeParam(Param param, float value);
-    void Silence();
+    virtual void ChangeParam(Param param, float value);
+    virtual void SetLevel(float level);
+    virtual void Silence();
 
     /*
     void SetWaveform(Waveform, Waveform);

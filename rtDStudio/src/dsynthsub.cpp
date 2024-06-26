@@ -1,4 +1,6 @@
 #include "dsynthsub.h"
+#include <iostream>
+#include <stdio.h>
 
 
 
@@ -246,7 +248,7 @@ float DSynthSub::Process()
 			filter_out += osc_out;
 		}
 	}
-//	filter_out /= voices_;
+    //	filter_out /= voices_;
 
     // overdrive
     if (overdrive_drive_ > 0.0f) {
@@ -403,6 +405,26 @@ void DSynthSub::SetFilter(FilterType filter_type, float filter_cutoff, float fil
     }
 }
 
+void DSynthSub::SetFilterFreq(float filter_cutoff)
+{
+    filter_cutoff_ = filter_cutoff;
+
+    for (uint8_t i = 0; i < voices_; i++)
+    {
+        svf_[i].SetFreq(filter_cutoff_);
+    }
+}
+
+void DSynthSub::SetFilterRes(float filter_res)
+{
+    filter_res_ = filter_res;
+
+    for (uint8_t i = 0; i < voices_; i++)
+    {
+        svf_[i].SetRes(filter_res_);
+    }
+}
+
 
 
 void DSynthSub::SetEGLevel(Target target, float level)
@@ -537,14 +559,11 @@ void DSynthSub::ChangeParam(DSynth::Param param, float value)
             SetTuning(tune_, base_config_.detune * value);
             break;
         case DSynth::DSYNTH_PARAM_FILTER_CUTOFF:
-            SetFilter(filter_type_, 
-                    base_config_.filter_cutoff * value,
-                    filter_res_);
+            //if (value > .1f)
+            SetFilterFreq(base_config_.filter_cutoff * value);
             break;
         case DSynth::DSYNTH_PARAM_FILTER_RES:
-            SetFilter(filter_type_, 
-                    filter_cutoff_,
-                    base_config_.filter_res * value);
+            SetFilterRes(base_config_.filter_res * value);
             break;
         case DSynth::DSYNTH_PARAM_LFO_AMP:
             lfo_amp_ = base_config_.lfo_amp * value;
@@ -561,7 +580,17 @@ void DSynthSub::ChangeParam(DSynth::Param param, float value)
             SetTranspose(base_config_.transpose * value);
             break;
         case DSynth::DSYNTH_PARAM_TUNE:
-            SetTuning(base_config_.tune + value, detune_);
+            SetTuning(base_config_.tune * value, detune_);
             break;
     }   
+
+}
+
+
+
+void DSynthSub::SetLevel(float level)
+{
+    osc0_level_ = base_config_.osc0_level * level;
+    osc1_level_ = base_config_.osc0_level * level;
+    noise_level_ = base_config_.noise_level * level;
 }

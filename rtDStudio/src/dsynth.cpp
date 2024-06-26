@@ -1,5 +1,7 @@
 #include "dsynth.h"
 
+#include <iostream>
+#include <stdio.h>
 
 
 void DSynth::Init(const Config& config)
@@ -22,8 +24,8 @@ float DSynth::Process()
 
 void DSynth::Process(float *out_l, float *out_r)
 {
-    *out_l = Process();
-    *out_r = *out_l;
+//    *out_l = Process();
+//    *out_r = *out_l;
 }
 
 
@@ -46,7 +48,13 @@ void DSynth::NoteOff(uint8_t midi_note)
 
 
 
-void DSynth::ChangeParam(Param param, float value1)
+void DSynth::ChangeParam(Param param, float value)
+{
+}	
+
+
+
+void DSynth::SetLevel(float value)
 {
 }	
 

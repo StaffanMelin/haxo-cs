@@ -94,7 +94,7 @@ int main()
 */
 	std::vector<unsigned int> deviceIds = rt_dac.getDeviceIds();
 	if ( deviceIds.size() < 1 ) {
-		std::cout << "\nNo audio devices found!\n";
+		std::cout << "ERROR No audio devices found!\n";
 		goto cleanup;
 	}
 
@@ -104,8 +104,6 @@ int main()
 	rt_device = 0;
 	std::cout << "\nFound " << deviceIds.size() << " device(s).\n";
 	std::cout << "\nAPI: " << RtAudio::getApiDisplayName(rt_dac.getCurrentApi()) << std::endl;
-
-	std::cout << "\n";
 
 	for (unsigned int i = 0; i < deviceIds.size(); i++)
 	{
@@ -119,9 +117,10 @@ int main()
 
 		std::cout << "Device Name = " << rt_info.name << "\n";
 		std::cout << "Device ID = " << deviceIds[i] << "\n";
-		std::cout << "Output Channels = " << rt_info.outputChannels << "\n";
-		std::cout << "Input Channels = " << rt_info.inputChannels << "\n";
-		std::cout << "Duplex Channels = " << rt_info.duplexChannels << "\n";
+		//std::cout << "Output Channels = " << rt_info.outputChannels << "\n";
+		//std::cout << "Input Channels = " << rt_info.inputChannels << "\n";
+		//std::cout << "Duplex Channels = " << rt_info.duplexChannels << "\n";
+		/*
 		if (rt_info.isDefaultOutput)
 			std::cout << "Default output device.\n";
 		else
@@ -155,11 +154,12 @@ int main()
 			std::cout << "No preferred sample rate found!" << std::endl;
 		else
 			std::cout << "Preferred sample rate = " << rt_info.preferredSampleRate << std::endl;
+		
+		*/
 	}
 
 	// select device
 	// Device Name = hw:MAX98357A,0
-	std::cout << "setup A" << std::endl;
 
 	// setup output
 	/*
@@ -189,8 +189,6 @@ int main()
 	data = (double *)calloc(rt_channels * rt_buffer_frames, sizeof(double));
 //	double data[2] = {0, 0};
 
-	std::cout << "setup B open" << std::endl;
-
 	// open stream
 	if (rt_dac.openStream(&rt_params, // output
 						  NULL,		  // input
@@ -212,12 +210,7 @@ int main()
 		goto cleanup;
 	}
 */
-	std::cout << "setup D latency" << std::endl;
-
-	std::cout << "Stream latency = " << rt_dac.getStreamLatency() << "\n"
-			  << std::endl;
-
-	std::cout << "setup E start stream" << std::endl;
+	std::cout << "Stream latency = " << rt_dac.getStreamLatency() << "\n";
 
 	// start stream
 	if (rt_dac.startStream())
@@ -231,15 +224,11 @@ int main()
 	done = false;
 	(void)signal(SIGINT, finish);
 
-	std::cout << "setup F loop" << std::endl;
-
 	while (!done && rt_dac.isStreamRunning())
 	{
 		rt_app.ProcessControl();
-		//SLEEP(100);
+		SLEEP(1);
 	}
-
-	
 
 	// stop stream
 	if (rt_dac.isStreamRunning())

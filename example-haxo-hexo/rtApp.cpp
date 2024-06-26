@@ -28,15 +28,15 @@ void rtApp::Setup()
   DMixer::Config dmix_config;
 
   dmix_synth[0] = &dsynthmelody;
-  dmix_level[0] = 0.6;
+  dmix_level[0] = 0.2;
   dmix_pan[0] = 0.5f;
-  dmix_chorus_level[0] = 0.2f;
-  dmix_reverb_level[0] = 0.5f;
+  dmix_chorus_level[0] = 0.0f;
+  dmix_reverb_level[0] = 0.2f;
   dmix_mono[0] = true;
   dmix_group[0] = 0;
   dmix_config.sample_rate = DSTUDIO_SAMPLE_RATE;
   dmix_config.channels = 1;
-  dmix_config.amp = 0.5f;
+  dmix_config.amp = 0.1f;
   dmix_config.synth = dmix_synth;
   dmix_config.pan = dmix_pan;
   dmix_config.level = dmix_level;
@@ -55,12 +55,12 @@ void rtApp::Setup()
   // init haxo
   DHaxo::Config dhaxo_config;
   dhaxo_config.synth = &dsynthmelody;
-  dhaxo_config.hexo_connected = false;
+  dhaxo_config.hexo_connected = true;
 
   // order of hexo_target maps to order of values received from hexo controller
   dhaxo_config.hexo_target[0] = DSynth::DSYNTH_PARAM_TUNE; 
   dhaxo_config.hexo_target[1] = DSynth::DSYNTH_PARAM_FILTER_CUTOFF; 
-  dhaxo_config.hexo_target[2] = DSynth::DSYNTH_PARAM_LFO_AMP;
+  dhaxo_config.hexo_target[2] = DSynth::DSYNTH_PARAM_LFO_FREQ;
   dhaxo.Init(dhaxo_config);
 
 }
@@ -69,7 +69,7 @@ void rtApp::Setup()
 
 void rtApp::ProcessControl()
 {
-  dhaxo.Process();
+  dhaxo.ProcessControl();
 }
 
 

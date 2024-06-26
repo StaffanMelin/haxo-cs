@@ -116,12 +116,16 @@ class DSynthSub : public DSynth
     void SetTranspose(uint8_t);
     void SetLevel(float, float, float);
     void SetFilter(FilterType, float, float);
+    void SetFilterFreq(float);
+    void SetFilterRes(float);
     void SetEGLevel(Target, float);
     void SetEG(Target, float, float, float, float);
     void SetLFO(Waveform, float, float, float, float, float);
     void SetPortamento(float);
     void SetDelay(float, float);
     void SetOverdrive(float, float);
+
+    void SetLevel(float);
     void ChangeParam(DSynth::Param param, float value);
     
 private:

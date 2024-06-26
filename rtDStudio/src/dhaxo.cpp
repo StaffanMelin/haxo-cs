@@ -99,6 +99,11 @@ void DHaxo::Init(const Config& config)
     if (hexo_connected_)
     {
         // TODO error check
+        #ifdef DEBUG
+            std::cout << "Open serial. "  << "\n";
+        #endif
+
+        try {
         serial_port_.Open("/dev/ttyACM0");
         serial_port_.SetBaudRate(LibSerial::BaudRate::BAUD_38400);
         serial_port_.SetCharacterSize(LibSerial::CharacterSize::CHAR_SIZE_8);
@@ -107,6 +112,12 @@ void DHaxo::Init(const Config& config)
         serial_port_.SetStopBits(LibSerial::StopBits::STOP_BITS_1) ;
 
         serial_buffer_next_ = 0;
+        }
+        catch (...)
+        {
+            std::cout << "Could not open/init serial: " << std::endl;
+            hexo_connected_ = false;
+        }
     }
 }
 
@@ -174,7 +185,7 @@ float DHaxo::Pressure()
         pmin = pressure;
     if (pmax < pressure)
         pmax = pressure;
-    std::cout << "read: " << pressure  << " pmin:" << pmin << " pmax:" << pmax << "\n";
+    // std::cout << "read: " << pressure  << " pmin:" << pmin << " pmax:" << pmax << "\n";
     #endif
 
     if (pressure > DHAXO_PRESSURE_START)
@@ -245,32 +256,35 @@ void DHaxo::DispatchController(DSynth::Param controller_target, float controller
             DSYNTH_PARAM_DETUNE,
             DSYNTH_PARAM_TRANSPOSE,
     */
-   DSynth::Param target = hexo_target_[controller_target];
-   if (!(target == DSynth::DSYNTH_PARAM_TUNE ||
-       target == DSynth::DSYNTH_PARAM_DETUNE ||
-       target == DSynth::DSYNTH_PARAM_TRANSPOSE))
+   if (!(controller_target == DSynth::DSYNTH_PARAM_TUNE ||
+       controller_target == DSynth::DSYNTH_PARAM_DETUNE ||
+       controller_target == DSynth::DSYNTH_PARAM_TRANSPOSE))
     {
         controller_value = abs(controller_value);
     }
 
-    synth_->ChangeParam(target, controller_value);
+    #ifdef DEBUG
+    #endif
 
+    synth_->ChangeParam(controller_target, controller_value);
 }
 
 
 
-void DHaxo::Process()
+void DHaxo::ProcessControl()
 {
     uint32_t keys = Keys();
     float pressure = Pressure();
+
     #ifdef DEBUG
-    std::cout << "dhaxo pressure: " << pressure  << "  keys " << keys << "\n";
+    //std::cout << "dhaxo pressure: " << pressure  << "  keys " << keys << "\n";
     #endif
 
     vol_ = pressure;
     if (vol_ != vol_last_)
     {
-        synth_->SetLevel(channel_, vol_);
+        synth_->SetLevel(vol_);
+//        synth_->SetLevel(channel_, vol_);
         vol_last_ = vol_;
     }
 
@@ -281,13 +295,13 @@ void DHaxo::Process()
         {
             if (vol_ > 0.0f)
             {
-                if (note_ > 0)
+                if (note_last_ > 0)
                 {
                     // finish old note
-                    synth_->SetLevel(channel_, 0.0f); // TODO neccessary? Doesn't let note finish env. OK for mono though.
+                    synth_->SetLevel(0.0f); // TODO neccessary? Doesn't let note finish env. OK for mono though.
                     synth_->MidiIn(MIDI_MESSAGE_NOTEOFF + channel_, note_last_, 0);
                     // start new note
-                    synth_->SetLevel(channel_, vol_);
+                    synth_->SetLevel(vol_);
                 }
                 synth_->MidiIn(MIDI_MESSAGE_NOTEON + channel_, note_, 100);
                 note_last_ = note_;
@@ -304,7 +318,7 @@ void DHaxo::Process()
         {
             // up
             #ifdef DEBUG
-            show(keys);
+            //show(keys);
             #endif
             // down
 
@@ -323,45 +337,51 @@ void DHaxo::Process()
             pitch = read value from analog pot, int
             modwheel = read value from analog pot, int
             distance sensor = distance in cm's, int
+            ie
 
             so the targets and values must match per index
-            ie
             order of received value -> hexo_value_[n]
             hexo_value_[n] is sent to hexo_target_[n]
         */
 
         //int available = serial_port_.GetNumberOfBytesAvailable() > 0;
-        uint8_t hexo_controller = 0;
         while (serial_port_.GetNumberOfBytesAvailable() > 0)
         {
+            uint8_t hexo_controller = 0;
             char c;
             serial_port_.ReadByte(c);
             serial_buffer_[serial_buffer_next_++] = c;
             if (c == '\n')
             {
+                serial_buffer_[serial_buffer_next_] = 0;
+                // std::cout << "Serial buffer" << serial_buffer_ << "\n";
+
                 char *token;
                 char *sbuffer;
                 char *token_end;
                 sbuffer = serial_buffer_;
                 // we now have a line of values, 16bit ints separated by commas
-                while ((token = strsep(&sbuffer,";")) != NULL)
+                while ((token = strsep(&sbuffer,",")) != NULL)
                 {
                     float token_value = strtof(token, &token_end);
+                    // std::cout << "tok val" << token_value << "\n";
 
                     hexo_value_[hexo_controller] = token_value;
 
                     hexo_controller++;
                 }
                 serial_buffer_next_ = 0;
-                for (uint8_t i = 0; i < (hexo_controller - 1); i++)
+                for (uint8_t i = 0; i < hexo_controller ; i++)
                 {
+                    std::cout << " target: " << (int)hexo_target_[i] << " value "  << hexo_value_[i];
                     DispatchController(hexo_target_[i], hexo_value_[i]);
                 }
+                std::cout << "\n";
             }
         }
     }
 
-    usleep(10); // .01ms
+//    usleep(100); // .01ms
 }
 
 

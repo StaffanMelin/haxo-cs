@@ -45,7 +45,7 @@ public:
     };
 
 	void Init(const Config&);
-	void Process();
+	void ProcessControl();
 	void Exit();
 
 private:
