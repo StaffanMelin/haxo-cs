@@ -2,63 +2,19 @@
 
 #include "dstudio.h"
 #include "dsound.h"
+#include "dsynth.h"
 
-#include "adsr.h"
-#include "delayline.h"
 #include "fm2.h"
-#include "oscillator.h"
-#include "overdrive.h"
-#include "port.h"
-#include "svf.h"
-#include "whitenoise.h"
-
-// polyphony
-#define DSYNTHFM_VOICES_MAX 8
-// delay
-#define DSYNTHFM_DELAY_MAX_S 2.0f // delay max in seconds
-#define DSYNTHFM_DELAY_MAX static_cast<size_t>(DSTUDIO_SAMPLE_RATE * DSYNTHFM_DELAY_MAX_S)
 
 // using namespace daisysp;
 
-class DSynthFm : public DSound
+class DSynthFm : public DSynth
 {
 
 	public:
 
     DSynthFm() {}
     ~DSynthFm() {}
-
-    enum Waveform
-    {
-        WAVE_SIN,
-        WAVE_TRI,
-        WAVE_SAW,
-        WAVE_RAMP,
-        WAVE_SQUARE,
-        WAVE_POLYBLEP_TRI,
-        WAVE_POLYBLEP_SAW,
-        WAVE_POLYBLEP_SQUARE,
-        WAVE_LAST,
-    };
-
-    enum Target
-    {
-    	NONE,
-        PITCH,
-        FILTER,
-        AMP,
-        LAST,
-    };
-
-	enum FilterType
-	{
-		BAND,
-		HIGH,
-		LOW,
-		NOTCH,
-        PEAK,
-        PASSTHROUGH
-	};
 
     struct Config
     {
@@ -68,6 +24,7 @@ class DSynthFm : public DSound
 		float index;
         float tune;
         int8_t transpose;
+        float osc0_level;
         float noise_level;
         FilterType filter_type;
 		float filter_res;
@@ -99,7 +56,8 @@ class DSynthFm : public DSound
         float overdrive_drive;
     };
 
-	void Init(const Config&);
+	void Init();
+	void Set(const Config&);
 	float Process();
     void Process(float *, float *);
     void MidiIn(uint8_t, uint8_t, uint8_t);
@@ -107,18 +65,22 @@ class DSynthFm : public DSound
 	void NoteOff(uint8_t midi_note);
 
     void Silence();
+    void SetLevel(float, float);
     void SetRatio(float);
     void SetIndex(float);
     void SetTuning(float);
     void SetTranspose(uint8_t);
-    void SetLevel(float);
     void SetFilter(FilterType, float, float);
+    void SetFilterFreq(float);
+    void SetFilterRes(float);
     void SetEGLevel(Target, float);
     void SetEG(Target, float, float, float, float);
     void SetLFO(Waveform, float, float, float, float, float);
     void SetPortamento(float);
     void SetDelay(float, float);
     void SetOverdrive(float, float);
+    void SetLevel(float);
+    void ChangeParam(DSynth::Param param, float value);
 
 private:
 
@@ -128,6 +90,7 @@ private:
 	float index_;
     float tune_;
     int8_t transpose_;
+    float osc0_level_;
     float noise_level_;
     FilterType filter_type_;
 	float filter_res_;
@@ -158,20 +121,22 @@ private:
     float overdrive_gain_;
     float overdrive_drive_;
 
+    Config base_config_;
+
 	uint8_t osc_next_;
-    uint8_t note_midi_[DSYNTHFM_VOICES_MAX];
-    float note_freq_[DSYNTHFM_VOICES_MAX];
-    float note_velocity_[DSYNTHFM_VOICES_MAX];
+    uint8_t note_midi_[DSYNTH_VOICES_MAX];
+    float note_freq_[DSYNTH_VOICES_MAX];
+    float note_velocity_[DSYNTH_VOICES_MAX];
 
-    daisysp::Fm2 fm2_[DSYNTHFM_VOICES_MAX];
+    daisysp::Fm2 fm2_[DSYNTH_VOICES_MAX];
     daisysp::WhiteNoise noise_;
-    daisysp::Adsr eg_p_[DSYNTHFM_VOICES_MAX];
-    daisysp::Adsr eg_f_[DSYNTHFM_VOICES_MAX];
-    daisysp::Adsr eg_a_[DSYNTHFM_VOICES_MAX];
-    daisysp::Svf svf_[DSYNTHFM_VOICES_MAX];
+    daisysp::Adsr eg_p_[DSYNTH_VOICES_MAX];
+    daisysp::Adsr eg_f_[DSYNTH_VOICES_MAX];
+    daisysp::Adsr eg_a_[DSYNTH_VOICES_MAX];
+    daisysp::Svf svf_[DSYNTH_VOICES_MAX];
     daisysp::Oscillator lfo_;
-    daisysp::Port port_[DSYNTHFM_VOICES_MAX];
+    daisysp::Port port_[DSYNTH_VOICES_MAX];
 
-    daisysp::DelayLine<float, DSYNTHFM_DELAY_MAX> delay_;
+    daisysp::DelayLine<float, DSYNTH_DELAY_MAX> delay_;
     daisysp::Overdrive overdrive_;
 };

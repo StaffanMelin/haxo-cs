@@ -7,7 +7,7 @@
 void DSynthSub::Init()
 {
 	sample_rate_ = DSTUDIO_SAMPLE_RATE;
-	voices_ = DSYNTHSUB_VOICES_MAX;
+	voices_ = DSYNTH_VOICES_MAX;
 
     // noise, shared
     noise_.Init();
@@ -27,7 +27,7 @@ void DSynthSub::Init()
 		svf_[i].Init(sample_rate_);
 	
 		// portamento
-		port_[i].Init(sample_rate_, 0);    
+		port_[i].Init(sample_rate_, 0.0f);    
 
         // note data
         note_midi_[i] = 0;
@@ -59,7 +59,7 @@ void DSynthSub::Set(const Config& config)
 {
     base_config_ = config;
 
-	sample_rate_ = config.sample_rate;
+	//sample_rate_ = config.sample_rate;
 	voices_ = config.voices;
 	waveform0_ = config.waveform0;
 	waveform1_ = config.waveform1;
@@ -581,6 +581,9 @@ void DSynthSub::ChangeParam(DSynth::Param param, float value)
             break;
         case DSynth::DSYNTH_PARAM_TUNE:
             SetTuning(base_config_.tune * value, detune_);
+            break;
+        case DSynth::DSYNTH_PARAM_FREQ:
+            note_freq_[0] = value;
             break;
     }   
 

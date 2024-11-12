@@ -1,5 +1,41 @@
 #pragma once
 
+/*
+Description of sequence data format.
+
+Base constants and types defined in dseq.h.
+
+array of (song steps)
+    array of (channels)
+        struct (sequence number, length)
+
+    dmidisong_t dsong
+    {
+        {{0, DT1 * 8}, {5, DT1}, {5, DT1 * 8}, {3, DT1}, {5, DT1}, {6, DT1 * 2}},
+        {{0, DT1 * 8}, {1, DT1}, {5, DT1 * 8}, {3, DT1}, {5, DT1}, {6, DT1 * 2}},
+        {{0, DT1 * 8}, {1, DT1}, {2, DT1 * 8}, {3, DT1}, {4, DT1}, {6, DT1 * 2}},
+        {{5, DT1 * 8}, {5, DT1}, {2, DT1 * 8}, {3, DT1}, {5, DT1}, {6, DT1 * 2}}
+    };
+
+array of (sequences)
+    array of (notes)
+        struct (position, message (eg note on), MIDI note, velocity)
+
+    dmidiseq_t dseq
+    {
+        {
+            {0, DEN, 31, DV7}, {0, DEN, 38, DV7}, {0, DEN, 43, DV7},
+            {DT1*4, DEN, 38, DVOFF}, {DT1*4, DEN, 39, DV7}, {DT1*4, DEN, 36, DV7},
+            {DT1*5, DEN, 39, DVOFF}, {DT1*5, DEN, 41, DV7},
+            {DT1*6, DEN, 31, DVOFF}, {DT1*6, DEN, 43, DVOFF}, {DT1*6, DEN, 38, DVOFF}, {DT1*6, DEN, 39, DV7}, {DT1*6, DEN, 34, DV7},
+            {DT1*7, DEN, 39, DVOFF}, {DT1*7, DEN, 34, DVOFF}, {DT1*7, DEN, 38, DV7}, {DT1*7, DEN, 33, DV7},
+            {DT1*8-1, DEN, 38, DVOFF}, {DT1*8-1, DEN, 33, DVOFF}, {DT1*8-1, DEN, 41, DVOFF}
+        }
+        ,
+
+
+*/
+
 #include <stdint.h>
 #include <vector>
 

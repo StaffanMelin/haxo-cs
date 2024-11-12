@@ -12,12 +12,6 @@
 #include "svf.h"
 #include "whitenoise.h"
 
-// polyphony
-#define DSYNTHSUB_VOICES_MAX 8
-// delay
-#define DSYNTHSUB_DELAY_MAX_S 2.0f // delay max in seconds
-#define DSYNTHSUB_DELAY_MAX static_cast<size_t>(DSTUDIO_SAMPLE_RATE * DSYNTHSUB_DELAY_MAX_S)
-
 // using namespace daisysp;
 
 class DSynthSub : public DSynth
@@ -27,38 +21,6 @@ class DSynthSub : public DSynth
 
     DSynthSub() {}
     ~DSynthSub() {}
-
-    enum Waveform
-    {
-        WAVE_SIN,
-        WAVE_TRI,
-        WAVE_SAW,
-        WAVE_RAMP,
-        WAVE_SQUARE,
-        WAVE_POLYBLEP_TRI,
-        WAVE_POLYBLEP_SAW,
-        WAVE_POLYBLEP_SQUARE,
-        WAVE_LAST,
-    };
-
-    enum Target
-    {
-    	NONE,
-        PITCH,
-        FILTER,
-        AMP,
-        LAST,
-    };
-
-	enum FilterType
-	{
-		BAND,
-		HIGH,
-		LOW,
-		NOTCH,
-        PEAK,
-        PASSTHROUGH
-    };
 
     struct Config
     {
@@ -172,19 +134,19 @@ private:
     Config base_config_;
     
 	uint8_t osc_next_;
-    uint8_t note_midi_[DSYNTHSUB_VOICES_MAX];
-    float note_freq_[DSYNTHSUB_VOICES_MAX];
-    float note_velocity_[DSYNTHSUB_VOICES_MAX];
-    daisysp::Oscillator osc0_[DSYNTHSUB_VOICES_MAX];
-    daisysp::Oscillator osc1_[DSYNTHSUB_VOICES_MAX];
+    uint8_t note_midi_[DSYNTH_VOICES_MAX];
+    float note_freq_[DSYNTH_VOICES_MAX];
+    float note_velocity_[DSYNTH_VOICES_MAX];
+    daisysp::Oscillator osc0_[DSYNTH_VOICES_MAX];
+    daisysp::Oscillator osc1_[DSYNTH_VOICES_MAX];
     daisysp::WhiteNoise noise_;
-    daisysp::Adsr eg_p_[DSYNTHSUB_VOICES_MAX];
-    daisysp::Adsr eg_f_[DSYNTHSUB_VOICES_MAX];
-    daisysp::Adsr eg_a_[DSYNTHSUB_VOICES_MAX];
-    daisysp::Svf svf_[DSYNTHSUB_VOICES_MAX];
+    daisysp::Adsr eg_p_[DSYNTH_VOICES_MAX];
+    daisysp::Adsr eg_f_[DSYNTH_VOICES_MAX];
+    daisysp::Adsr eg_a_[DSYNTH_VOICES_MAX];
+    daisysp::Svf svf_[DSYNTH_VOICES_MAX];
     daisysp::Oscillator lfo_;
-    daisysp::Port port_[DSYNTHSUB_VOICES_MAX];
+    daisysp::Port port_[DSYNTH_VOICES_MAX];
 
-    daisysp::DelayLine<float, DSYNTHSUB_DELAY_MAX> delay_;
+    daisysp::DelayLine<float, DSYNTH_DELAY_MAX> delay_;
     daisysp::Overdrive overdrive_;
 };

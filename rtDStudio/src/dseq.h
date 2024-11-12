@@ -8,7 +8,12 @@
 #define DSEQRESOLUTION 1000
 
 // seq event type "shortcut" (DE = Dstudio Event)
-#define DEN MIDI_MESSAGE_NOTEON // note on
+#define DEN MIDI_MESSAGE_NOTEON // Note on
+
+// seq modifiction actions
+#define DSOUND_SEQACTION_DEL 0
+#define DSOUND_SEQACTION_ADD 1
+#define DSOUND_SEQACTION_MOD 2
 
 // note lengths (DT = Dstudio Ticks)
 #define DT1 1024

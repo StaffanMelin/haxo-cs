@@ -56,7 +56,7 @@ std::string DXMLSettings::getValue(const std::string& tag, const std::string& de
 
         if (setting_ != NULL)
         {
-	    std::string value = setting_->GetText();
+    	    std::string value = setting_->GetText();
             return value;
         }
     }
@@ -113,7 +113,12 @@ void DXMLSettings::loadInit(const std::string& fileName)
 {
     fileName_ = fileName;
     doc_ = new TiXmlDocument();  
-    doc_->LoadFile(fileName.c_str()); // error check, returns bool
+    if (!doc_->LoadFile(fileName.c_str()))
+    {
+        std::cout << "ERROR: Couldn't load " << fileName << "\n";
+        exit(0);
+    }
+
     root_ = doc_->RootElement();
 }
 

@@ -33,6 +33,38 @@ class DSynth : public DSound
     DSynth() {}
     ~DSynth() {}
 
+    enum Waveform
+    {
+        WAVE_SIN,
+        WAVE_TRI,
+        WAVE_SAW,
+        WAVE_RAMP,
+        WAVE_SQUARE,
+        WAVE_POLYBLEP_TRI,
+        WAVE_POLYBLEP_SAW,
+        WAVE_POLYBLEP_SQUARE,
+        WAVE_LAST,
+    };
+
+    enum Target
+    {
+    	NONE,
+        PITCH,
+        FILTER,
+        AMP,
+        LAST,
+    };
+
+	enum FilterType
+	{
+		BAND,
+		HIGH,
+		LOW,
+		NOTCH,
+        PEAK,
+        PASSTHROUGH
+	};
+
     struct Config
     {
     	float sample_rate;
@@ -56,6 +88,7 @@ class DSynth : public DSound
         DSYNTH_PARAM_DELAY_FEEDBACK,
         DSYNTH_PARAM_DELAY_FREQ,
         DSYNTH_PARAM_OVERDRIVE,
+        DSYNTH_PARAM_FREQ,
         DSYNTH_PARAM_LAST
     };
 

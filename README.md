@@ -1,6 +1,6 @@
 # haxo-cs
 
-Prerelease, only example 12 working (for the Haxo). The rest is from a previous project (reference). More to come -- soon! Check the issues for what will happen.
+Prerelease, More to come -- soon! Check the issues for what will happen.
 
 Code for making sounds with the [Haxophone](https://www.crowdsupply.com/cardona-bits/haxophone).
 

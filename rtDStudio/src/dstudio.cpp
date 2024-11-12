@@ -9,4 +9,3 @@ uint64_t ofGetElapsedTimeMicros(){
 float ofRandom(float max) {
     return (max * rand() / float(RAND_MAX)) * (1.0f - std::numeric_limits<float>::epsilon());
 }
-

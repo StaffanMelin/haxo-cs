@@ -2,13 +2,77 @@
 
 #include "dsampler.h"
 
-void DSampler::Init(const Config& config)
+void DSampler::Init()
 {
+	sample_rate_ = DSTUDIO_SAMPLE_RATE;
+	voices_ = DSYNTH_VOICES_MAX;
 
-    sample_rate_ = config.sample_rate;
+    // noise, shared
+    noise_.Init();
+
+    for (uint8_t i = 0; i < voices_; i++)
+    {
+        // oscillators
+        // samples
+        sample_index_[i] = 0.0f;
+        sample_index_factor_[0] = 1.0f;
+        note_midi_[i] = 0;
+        note_freq_[i] = 0;
+
+        // EG - pitch, filter, amplitude
+
+        eg_p_[i].Init(sample_rate_);
+
+        eg_f_[i].Init(sample_rate_);
+
+        eg_a_[i].Init(sample_rate_);
+
+        // filter
+
+        svf_l_[i].Init(sample_rate_);
+        svf_r_[i].Init(sample_rate_);
+
+        // portamento
+
+        port_[i].Init(sample_rate_, 0.0f);
+
+        // note data
+        note_midi_[i] = 0;
+        note_freq_[i] = 0.0f;
+        note_velocity_[i] = 0.0f;
+    }
+
+    // lfo
+
+    lfo_.Init(sample_rate_);
+
+    // delay
+
+    delay_l_.Init();
+    delay_r_.Init();
+
+    // overdrive
+
+    overdrive_.Init();
+
+    // init
+    osc_next_ = 0; // circular buffer of midi notes
+
+    SetType(TUNED);
+}
+
+
+
+void DSampler::Set(const Config& config)
+{
+    base_config_ = config;
+
+    //sample_rate_ = config.sample_rate;
     voices_ = config.voices;
     tune_ = config.tune;
     transpose_ = config.transpose;
+    osc0_level_ = config.osc0_level;
+    noise_level_ = config.noise_level;
     filter_type_ = config.filter_type;
     filter_cutoff_ = config.filter_cutoff;
     filter_res_ = config.filter_res;
@@ -57,19 +121,16 @@ void DSampler::Init(const Config& config)
 
         // EG - pitch, filter, amplitude
 
-        eg_p_[i].Init(sample_rate_);
         eg_p_[i].SetTime(daisysp::ADSR_SEG_ATTACK, eg_p_attack_);
         eg_p_[i].SetTime(daisysp::ADSR_SEG_DECAY, eg_p_decay_);
         eg_p_[i].SetTime(daisysp::ADSR_SEG_RELEASE, eg_p_release_);
         eg_p_[i].SetSustainLevel(eg_p_sustain_);
 
-        eg_f_[i].Init(sample_rate_);
         eg_f_[i].SetTime(daisysp::ADSR_SEG_ATTACK, eg_f_attack_);
         eg_f_[i].SetTime(daisysp::ADSR_SEG_DECAY, eg_f_decay_);
         eg_f_[i].SetTime(daisysp::ADSR_SEG_RELEASE, eg_f_release_);
         eg_f_[i].SetSustainLevel(eg_f_sustain_);
 
-        eg_a_[i].Init(sample_rate_);
         eg_a_[i].SetTime(daisysp::ADSR_SEG_ATTACK, eg_a_attack_);
         eg_a_[i].SetTime(daisysp::ADSR_SEG_DECAY, eg_a_decay_);
         eg_a_[i].SetTime(daisysp::ADSR_SEG_RELEASE, eg_a_release_);
@@ -77,18 +138,16 @@ void DSampler::Init(const Config& config)
 
         // filter
 
-        svf_l_[i].Init(sample_rate_);
         svf_l_[i].SetFreq(filter_cutoff_);
         svf_l_[i].SetRes(filter_res_);
         svf_l_[i].SetDrive(0.0f); // default
-        svf_r_[i].Init(sample_rate_);
         svf_r_[i].SetFreq(filter_cutoff_);
         svf_r_[i].SetRes(filter_res_);
         svf_r_[i].SetDrive(0.0f); // default
 
         // portamento
 
-        port_[i].Init(sample_rate_, portamento_);
+        port_[i].SetHtime(portamento_);
 
         // note data
         note_midi_[i] = 0;
@@ -98,27 +157,21 @@ void DSampler::Init(const Config& config)
 
     // lfo
 
-    lfo_.Init(sample_rate_);
     lfo_.SetWaveform(lfo_waveform_);
     lfo_.SetFreq(lfo_freq_);
     lfo_.SetAmp(lfo_amp_);
 
     // delay
 
-    delay_l_.Init();
     delay_l_.SetDelay(sample_rate_ * delay_delay_);
-    delay_r_.Init();
     delay_r_.SetDelay(sample_rate_ * delay_delay_);
 
     // overdrive
 
-    overdrive_.Init();
     overdrive_.SetDrive(overdrive_drive_);
 
     // init
     osc_next_ = 0; // circular buffer of midi notes
-
-    SetType(TUNED);
 }
 
 
@@ -160,6 +213,7 @@ void DSampler::Process(float *out_l, float *out_r)
         // lfo, eg (always), velocity
 
         env_a_out = eg_a_[i].Process(note_on) * (1 - lfo_out * lfo_a_level_);
+        noise_.SetAmp(env_a_out);
 
         // osc - pitch
         // pitch can be affected by:
@@ -225,8 +279,9 @@ void DSampler::Process(float *out_l, float *out_r)
             osc_out_r = 0.f;
         }
 
-        osc_out_l = osc_out_l * env_a_out * note_velocity_[i];
-        osc_out_r = osc_out_r * env_a_out * note_velocity_[i];
+        float noise_out = noise_.Process() * noise_level_;
+        osc_out_l = osc_out_l * env_a_out * note_velocity_[i] * osc0_level_ + noise_out;
+        osc_out_r = osc_out_r * env_a_out * note_velocity_[i] * osc0_level_ + noise_out;
 
         // filter
         // cutoff can be affected by:
@@ -274,8 +329,8 @@ void DSampler::Process(float *out_l, float *out_r)
 
     } // for voices_
 
-//    filter_out_l /= voices_;
-//    filter_out_r /= voices_;
+    filter_out_l *= osc0_level_;
+    filter_out_r *= osc0_level_;
 
     // overdrive
     // no state in overdrive fx so we can use it on both channels
@@ -416,6 +471,32 @@ void DSampler::SetFilter(FilterType filter_type, float filter_cutoff, float filt
         svf_l_[i].SetFreq(filter_cutoff_);
         svf_l_[i].SetRes(filter_res_);
         svf_r_[i].SetFreq(filter_cutoff_);
+        svf_r_[i].SetRes(filter_res_);
+    }
+}
+
+
+
+void DSampler::SetFilterFreq(float filter_cutoff)
+{
+    filter_cutoff_ = filter_cutoff;
+
+    for (uint8_t i = 0; i < voices_; i++)
+    {
+        svf_l_[i].SetFreq(filter_cutoff_);
+        svf_r_[i].SetFreq(filter_cutoff_);
+    }
+}
+
+
+
+void DSampler::SetFilterRes(float filter_res)
+{
+    filter_res_ = filter_res;
+
+    for (uint8_t i = 0; i < voices_; i++)
+    {
+        svf_l_[i].SetRes(filter_res_);
         svf_r_[i].SetRes(filter_res_);
     }
 }
@@ -656,4 +737,60 @@ void DSampler::SetPhase(uint32_t sample_phase_start,
 uint32_t DSampler::GetLength()
 {
     return (sample_length_);
+}
+
+
+
+/*
+    value goes from 0 to +1.0
+*/
+void DSampler::ChangeParam(DSynth::Param param, float value)
+{
+    switch (param)
+    {
+        case DSynth::DSYNTH_PARAM_AMP:
+            SetLevel(value);
+            break;
+        case DSynth::DSYNTH_PARAM_DELAY_FEEDBACK:
+            delay_feedback_ = base_config_.delay_feedback * value;
+            break;
+        case DSynth::DSYNTH_PARAM_DELAY_FREQ:
+            SetDelay(base_config_.delay_delay * value, delay_feedback_);
+            break;
+        case DSynth::DSYNTH_PARAM_DETUNE:
+            //SetTuning(tune_, base_config_.detune * value);
+            break;
+        case DSynth::DSYNTH_PARAM_FILTER_CUTOFF:
+            SetFilterFreq(base_config_.filter_cutoff * value);
+            break;
+        case DSynth::DSYNTH_PARAM_FILTER_RES:
+            SetFilterRes(base_config_.filter_res * value);
+            break;
+        case DSynth::DSYNTH_PARAM_LFO_AMP:
+            lfo_amp_ = base_config_.lfo_amp * value;
+            lfo_.SetAmp(lfo_amp_);
+            break;
+        case DSynth::DSYNTH_PARAM_LFO_FREQ:
+            lfo_freq_ = base_config_.lfo_freq * value;
+            lfo_.SetFreq(lfo_freq_);
+            break;
+        case DSynth::DSYNTH_PARAM_OVERDRIVE:
+            SetOverdrive(overdrive_gain_, base_config_.overdrive_drive + value);
+            break;
+        case DSynth::DSYNTH_PARAM_TRANSPOSE:
+            SetTranspose(base_config_.transpose * value);
+            break;
+        case DSynth::DSYNTH_PARAM_TUNE:
+            SetTuning(base_config_.tune * value);
+            break;
+    }   
+
+}
+
+
+
+void DSampler::SetLevel(float level)
+{
+    osc0_level_ = base_config_.osc0_level * level;
+    noise_level_ = base_config_.noise_level * level;
 }

@@ -5,8 +5,11 @@
 #include <cstdlib>
 #include <signal.h>
 
-#include "main.h"
+#include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_ttf.h>
 
+#include "main.h"
 #include "rtApp.h"
 
 // RtAudio

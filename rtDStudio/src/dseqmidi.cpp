@@ -81,7 +81,6 @@ void DSeqMidi::Process()
     //            if (dmidiseq_[s].size() > 0)
                 if (dmidisong_[song_step_][c].seq_len > 0)
                 {
-
                     ticks_[c] += ticks_inc;
                     // notes left in seq?
                     if (note_[c] < dmidiseq_[s].size())
@@ -156,6 +155,31 @@ void DSeqMidi::Process()
     } // if running_
 }
 
+
+/*
+void DSeqMidi::SetNote(uint8_t action, 
+                        uint8_t seq,
+                        uint16_t note,
+                        uint64_t pos,
+                        uint8_t status, 
+                        uint8_t data0,
+                        uint8_t data1)
+{
+    switch (action)
+    {
+    case DSOUND_SEQACTION_MOD:
+        //dmidiseq_[seq][note].pos:
+        dmidiseq_[seq][note].status:
+        dmidiseq_[seq][note].data0:
+        dmidiseq_[seq][note].data1:
+        break;
+    
+    default:
+        break;
+    }
+
+}
+*/
 
 
 void DSeqMidi::SetBPM(uint8_t bpm)

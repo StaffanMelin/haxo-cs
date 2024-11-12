@@ -1,16 +1,10 @@
 #pragma once
 
-#include <string>
+//#include <string>
 
 #include "dstudio.h"
 #include "dsound.h"
-
-#include "oscillator.h"
-#include "adsr.h"
-#include "delayline.h"
-#include "overdrive.h"
-#include "port.h"
-#include "svf.h"
+#include "dsynth.h"
 
 #include <sndfile.h>
 
@@ -19,13 +13,8 @@
 // max sample time in seconds
 #define SAMPLE_TIME_MAX 30
 #define SAMPLE_BUFFER_MAX (DSTUDIO_SAMPLE_RATE * SAMPLE_TIME_MAX * 2) // 60 secs; 48k * 2 * 4 = 384k/s
-// polyphony
-#define DSAMPLER_VOICES_MAX 8
-// delay
-#define DSAMPLER_DELAY_MAX_S 2.0f // delay max in seconds
-#define DSAMPLER_DELAY_MAX static_cast<size_t>(DSTUDIO_SAMPLE_RATE * DSAMPLER_DELAY_MAX_S)
 
-class DSampler : public DSound
+class DSampler : public DSynth
 {
 
 public:
@@ -40,44 +29,14 @@ public:
         delete sample_buffer_;
     }
 
-    enum Waveform
-    {
-        WAVE_SIN,
-        WAVE_TRI,
-        WAVE_SAW,
-        WAVE_RAMP,
-        WAVE_SQUARE,
-        WAVE_POLYBLEP_TRI,
-        WAVE_POLYBLEP_SAW,
-        WAVE_POLYBLEP_SQUARE,
-        WAVE_LAST,
-    };
-
-    enum Target
-    {
-        NONE,
-        PITCH,
-        FILTER,
-        AMP,
-        LAST,
-    };
-
-    enum FilterType
-    {
-        BAND,
-        HIGH,
-        LOW,
-        NOTCH,
-        PEAK,
-        PASSTHROUGH
-    };
-
     struct Config
     {
         float sample_rate;
         uint8_t voices;
         float tune;
         uint8_t transpose;
+        float osc0_level;
+        float noise_level;
         FilterType filter_type;
         float filter_res;
         float filter_cutoff;
@@ -116,7 +75,8 @@ public:
         uint8_t sample_channels;
     };
 
-    void Init(const Config&);
+    void Init();
+    void Set(const Config&);
     float Process();
     void Process(float *, float *);
     void MidiIn(uint8_t, uint8_t, uint8_t);
@@ -128,6 +88,8 @@ public:
     void SetTuning(float);
     void SetTranspose(uint8_t);
     void SetFilter(FilterType, float, float);
+    void SetFilterFreq(float);
+    void SetFilterRes(float);
     void SetEGLevel(Target, float);
     void SetEG(Target, float, float, float, float);
     void SetLFO(Waveform, float, float, float, float, float);
@@ -139,6 +101,8 @@ public:
     void GetPhase(uint32_t *, uint32_t *, uint32_t *, uint32_t *);
     void SetPhase(uint32_t, uint32_t, uint32_t, uint32_t);
     uint32_t GetLength();
+    void SetLevel(float);
+    void ChangeParam(DSynth::Param param, float value);
 
 private:
 
@@ -146,6 +110,8 @@ private:
     uint8_t voices_;
     float tune_;
     uint8_t transpose_;
+    float osc0_level_;
+    float noise_level_;
     FilterType filter_type_;
     float filter_res_;
     float filter_cutoff_;
@@ -183,11 +149,13 @@ private:
     uint32_t sample_length_; // set when loading sample; length of sample, < BUFFER_MAX
     uint8_t sample_channels_; // set when loading sample
 
+    Config base_config_;
+
     // MIDI
     uint8_t osc_next_;
-    uint8_t note_midi_[DSAMPLER_VOICES_MAX];
-    float note_freq_[DSAMPLER_VOICES_MAX];
-    float note_velocity_[DSAMPLER_VOICES_MAX];
+    uint8_t note_midi_[DSYNTH_VOICES_MAX];
+    float note_freq_[DSYNTH_VOICES_MAX];
+    float note_velocity_[DSYNTH_VOICES_MAX];
 
     // sampler
     float *sample_buffer_ = NULL;
@@ -197,19 +165,21 @@ private:
     // start lstart lend end
     // gate--<--------->
     // sample - runtime
-    float sample_index_[DSAMPLER_VOICES_MAX]; // index into buffer
-    float sample_index_factor_[DSAMPLER_VOICES_MAX]; // how much to advance index for a new sample
+    float sample_index_[DSYNTH_VOICES_MAX]; // index into buffer
+    float sample_index_factor_[DSYNTH_VOICES_MAX]; // how much to advance index for a new sample
+
+    daisysp::WhiteNoise noise_;
 
     // objects
-    daisysp::Adsr eg_p_[DSAMPLER_VOICES_MAX];
-    daisysp::Adsr eg_f_[DSAMPLER_VOICES_MAX];
-    daisysp::Adsr eg_a_[DSAMPLER_VOICES_MAX];
-    daisysp::Svf svf_l_[DSAMPLER_VOICES_MAX];
-    daisysp::Svf svf_r_[DSAMPLER_VOICES_MAX];
+    daisysp::Adsr eg_p_[DSYNTH_VOICES_MAX];
+    daisysp::Adsr eg_f_[DSYNTH_VOICES_MAX];
+    daisysp::Adsr eg_a_[DSYNTH_VOICES_MAX];
+    daisysp::Svf svf_l_[DSYNTH_VOICES_MAX];
+    daisysp::Svf svf_r_[DSYNTH_VOICES_MAX];
     daisysp::Oscillator lfo_;
-    daisysp::Port port_[DSAMPLER_VOICES_MAX];
+    daisysp::Port port_[DSYNTH_VOICES_MAX];
 
-    daisysp::DelayLine<float, DSAMPLER_DELAY_MAX> delay_l_;
-    daisysp::DelayLine<float, DSAMPLER_DELAY_MAX> delay_r_;
+    daisysp::DelayLine<float, DSYNTH_DELAY_MAX> delay_l_;
+    daisysp::DelayLine<float, DSYNTH_DELAY_MAX> delay_r_;
     daisysp::Overdrive overdrive_;
 };
