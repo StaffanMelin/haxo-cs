@@ -1,0 +1,46 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/usr/include/SDL2",
+                "/home/staffan/Documents/projects/tech/haxophone/haxo-cs/rtDaisySP/src",
+                "/home/staffan/Documents/projects/tech/haxophone/haxo-cs/rtDaisySP/src/Effects",
+                "/home/staffan/Documents/projects/tech/haxophone/haxo-cs/rtDaisySP/src/Control",
+                "/home/staffan/Documents/projects/tech/haxophone/haxo-cs/rtDaisySP/src/Utility",
+                "/home/staffan/Documents/projects/tech/haxophone/haxo-cs/rtDaisySP/src/Filters",
+                "/home/staffan/Documents/projects/tech/haxophone/haxo-cs/rtDaisySP/src/Synthesis",
+                "/home/staffan/Documents/projects/tech/haxophone/haxo-cs/rtDaisySP/src/Noise"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang-14",
+            "cStandard": "c17",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "linux-clang-x64"
+        },
+        {
+            "name": "dcube",
+            "includePath": [
+                "/home/staffan/Documents/projects/tech/ccube/dcube/**",
+                "/usr/include/SDL2"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/g++",
+            "cStandard": "c17",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "linux-gcc-x64",
+            "compilerPathInCppPropertiesJson": "/usr/bin/g++",
+            "mergeConfigurations": false,
+            "browse": {
+                "path": [
+                    "/home/staffan/Documents/projects/tech/ccube/dcube/**",
+                    "/usr/include/SDL2",
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            }
+        }
+    ],
+    "version": 4
+}
